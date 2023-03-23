@@ -39,10 +39,10 @@ def main():
     fir=0
     sec=0
     if sys.argv[2]=='GET':
-        op=0
+        op=1
         fir=sys.argv[3]
     elif sys.argv[2]=='PUT':
-        op=1
+        op=2
         fir=sys.argv[3]
         sec=sys.argv[4]
     elif sys.argv[2]=='RANGE':
