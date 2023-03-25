@@ -304,7 +304,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 223,
+        "line" : 224,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -334,7 +334,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 201,
+        "line" : 202,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
@@ -716,16 +716,16 @@
               }
             }
           },
-          "false_next" : null,
-          "true_next" : "MyIngress.ipv4_lpm"
+          "true_next" : "MyIngress.ipv4_lpm",
+          "false_next" : "node_4"
         },
         {
           "name" : "node_4",
           "id" : 1,
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 177,
-            "column" : 16,
+            "line" : 179,
+            "column" : 12,
             "source_fragment" : "hdr.tcp.dstPort == 0x1234"
           },
           "expression" : {
@@ -752,7 +752,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 189,
+        "line" : 190,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
@@ -768,7 +768,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 201,
+        "line" : 202,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },

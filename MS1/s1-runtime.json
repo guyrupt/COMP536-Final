@@ -12,7 +12,7 @@
     {
       "table": "MyIngress.kvs",
       "match": {
-        "hdr.kvsQuery.queryType": 1
+        "hdr.kvs.op": 1
       },
       "action_name": "MyIngress.get",
       "action_params": {}
@@ -20,7 +20,7 @@
     {
       "table": "MyIngress.kvs",
       "match": {
-        "hdr.kvsQuery.queryType": 2
+        "hdr.kvs.op": 2
       },
       "action_name": "MyIngress.put",
       "action_params": {}
@@ -35,7 +35,7 @@
       },
       "action_name": "MyIngress.set_nhop",
       "action_params": {
-        "nhop_ipv4": "10.0.1.1",
+        "dstAddr": "10.0.1.1",
         "port": 1
       }
     }
