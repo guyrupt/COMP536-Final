@@ -158,6 +158,7 @@ control MyIngress(inout headers hdr,
             drop;
         }
         size = 1024;
+        default_action = drop();
     }
 
     table kvs {
@@ -167,18 +168,20 @@ control MyIngress(inout headers hdr,
         actions = {
             get;
             put;
+            drop;
         }
         size = 1024;
+        default_action = drop();
     }
 
     apply {
-        if (hdr.ethernet.etherType == TYPE_IPV4) {
+        //if (hdr.ethernet.etherType == TYPE_IPV4) {
             ipv4_lpm.apply();
             
-        }
-        if (hdr.tcp.dstPort == 0x1234) {
+        //}
+        //if (hdr.tcp.dstPort == 0x1234) {
                 kvs.apply();
-            }
+          //  }
         
     }
 }
