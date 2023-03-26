@@ -8,7 +8,11 @@ class KVS(Packet):
     name = "KVS"
     fields_desc = [ XByteField("operation",0),
                     ShortField("first",2000),
-                    BitField("second",2000,32)]
+                    BitField("second",2000,32),
+                    BitField("version",0,32),
+                    BitField("responseStatus",0,1),
+                    BitField("reserved", 0,15),
+                    ]
 
 bind_layers(TCP, KVS)
 
@@ -40,15 +44,15 @@ def main():
     sec=0
     if sys.argv[2]=='GET':
         op=1
-        fir=sys.argv[3]
+        fir=int(sys.argv[3])
     elif sys.argv[2]=='PUT':
         op=2
-        fir=sys.argv[3]
-        sec=sys.argv[4]
+        fir=int(sys.argv[3])
+        sec=int(sys.argv[4])
     elif sys.argv[2]=='RANGE':
         op=3
-        fir=sys.argv[3]
-        sec=sys.argv[4]
+        fir=int(sys.argv[3])
+        sec=int(sys.argv[4])
     elif sys.argv[2]=='SELECT':
         op=3
         operand = ''.join(i for i in sys.argv[3] if not i.isdigit())

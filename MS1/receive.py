@@ -15,11 +15,13 @@ from scapy.all import (
 from scapy.layers.inet import _IPOption_HDR
 
 from scapy.all import IP, TCP, Ether, get_if_hwaddr, get_if_list, sendp, Packet, BitField,bind_layers,XByteField
-class KVS(Packet):
-    name = "KVS"
-    fields_desc = [ XByteField("operation",0),
-                    ShortField("first",2000),
-                    BitField("second",2000,32)]
+
+from send import KVS
+# class KVS(Packet):
+#     name = "KVS"
+#     fields_desc = [ XByteField("operation",0),
+#                     ShortField("first",2000),
+#                     BitField("second",2000,32)]
 
 bind_layers(TCP, KVS)
 
@@ -49,12 +51,12 @@ class IPOption_MRI(IPOption):
                                    IntField("", 0),
                                    length_from=lambda pkt:pkt.count*4) ]
 def handle_pkt(pkt):
-    if TCP in pkt and pkt[TCP].dport == 1234:
+    if TCP in pkt and pkt[TCP].sport == 1234:
         print("got a packet")
         pkt.show2()
     #    hexdump(pkt)
         sys.stdout.flush()
-    print(pkt[TCP].payload)
+        print(pkt[TCP].payload)
 
 
 def main():
