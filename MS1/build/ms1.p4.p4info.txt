@@ -19,11 +19,6 @@ tables {
   action_refs {
     id: 25652968
   }
-  action_refs {
-    id: 21257015
-    annotations: "@defaultonly"
-    scope: DEFAULT_ONLY
-  }
   size: 1024
 }
 tables {
@@ -45,19 +40,9 @@ tables {
     id: 32427501
   }
   action_refs {
-    id: 21257015
-    annotations: "@defaultonly"
-    scope: DEFAULT_ONLY
+    id: 25652968
   }
   size: 1024
-}
-actions {
-  preamble {
-    id: 21257015
-    name: "NoAction"
-    alias: "NoAction"
-    annotations: "@noWarn(\"unused\")"
-  }
 }
 actions {
   preamble {
@@ -107,6 +92,36 @@ registers {
     bitstring {
       bit {
         bitwidth: 32
+      }
+    }
+  }
+  size: 6150
+}
+registers {
+  preamble {
+    id: 375629886
+    name: "MyIngress.latestVer"
+    alias: "latestVer"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1025
+}
+registers {
+  preamble {
+    id: 385763759
+    name: "MyIngress.notNull"
+    alias: "notNull"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 1
       }
     }
   }

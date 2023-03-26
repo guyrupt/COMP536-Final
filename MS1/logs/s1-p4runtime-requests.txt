@@ -1,10 +1,10 @@
 
-[2023-03-25 21:38:34.918] /p4.v1.P4Runtime/SetForwardingPipelineConfig
+[2023-03-26 20:38:13.637] /p4.v1.P4Runtime/SetForwardingPipelineConfig
 ---
-Message too long (24754 bytes)! Skipping log...
+Message too long (239440 bytes)! Skipping log...
 ---
 
-[2023-03-25 21:38:34.921] /p4.v1.P4Runtime/Write
+[2023-03-26 20:38:13.657] /p4.v1.P4Runtime/Write
 ---
 election_id {
   low: 1
@@ -20,6 +20,93 @@ updates {
         }
       }
       is_default_action: true
+    }
+  }
+}
+---
+
+[2023-03-26 20:38:13.658] /p4.v1.P4Runtime/Write
+---
+election_id {
+  low: 1
+}
+updates {
+  type: INSERT
+  entity {
+    table_entry {
+      table_id: 35207968
+      match {
+        field_id: 1
+        exact {
+          value: "\001"
+        }
+      }
+      action {
+        action {
+          action_id: 25395738
+        }
+      }
+    }
+  }
+}
+---
+
+[2023-03-26 20:38:13.659] /p4.v1.P4Runtime/Write
+---
+election_id {
+  low: 1
+}
+updates {
+  type: INSERT
+  entity {
+    table_entry {
+      table_id: 35207968
+      match {
+        field_id: 1
+        exact {
+          value: "\002"
+        }
+      }
+      action {
+        action {
+          action_id: 32427501
+        }
+      }
+    }
+  }
+}
+---
+
+[2023-03-26 20:38:13.660] /p4.v1.P4Runtime/Write
+---
+election_id {
+  low: 1
+}
+updates {
+  type: INSERT
+  entity {
+    table_entry {
+      table_id: 37375156
+      match {
+        field_id: 1
+        lpm {
+          value: "\n\000\001\001"
+          prefix_len: 32
+        }
+      }
+      action {
+        action {
+          action_id: 24952588
+          params {
+            param_id: 1
+            value: "\n\000\001\001"
+          }
+          params {
+            param_id: 2
+            value: "\000\001"
+          }
+        }
+      }
     }
   }
 }

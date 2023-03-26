@@ -53,11 +53,16 @@ header kvs_t {
     bit<8> op;
     bit<16> first;
     bit<32> second;
-    // bit<32> version;
+    bit<32> version;
+    bit<1> responseStatus;
+    bit<15> reserved;
 }
 
 header response_t {
     bit<32> value;
+    bit<1> notNull;
+    bit<1> nextHeader;
+    bit<6> reserved;
 }
 
 struct metadata {
@@ -69,7 +74,7 @@ struct headers {
     ipv4_t      ipv4;
     tcp_t       tcp;
     kvs_t       kvs;
-    response_t  response;
+    response_t[1025]  response;
 }
 
 /*************************************************************************
@@ -106,7 +111,18 @@ parser MyParser(packet_in packet,
     }
     state parse_kvs {
         packet.extract(hdr.kvs);
-        transition accept;
+        transition select(hdr.kvs.responseStatus) {
+            1: parse_response;
+            default: accept;
+        }
+    }
+
+    state parse_response {
+        packet.extract(hdr.response.next);
+        transition select(hdr.response.last.nextHeader){
+            0: parse_response;
+            default: accept;
+        }
     }
 }
 
@@ -126,12 +142,16 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
     
-    register <bit<32>>(1025) database;
-    // register <bit<32>>(6150) database;
-    // register <bit<32>>(1025) latestVersion;
+    // register <bit<32>>(1025) database;
+    register <bit<32>>(6150) database;
+    register <bit<32>>(1025) latestVer;
+    register <bit<1>>(1025) notNull;
 
     action set_nhop(ip4Addr_t dstAddr, egressSpec_t port) {
         hdr.ipv4.dstAddr = dstAddr;
+        port_t temp = hdr.tcp.srcPort;
+        hdr.tcp.srcPort = hdr.tcp.dstPort;
+        hdr.tcp.dstPort = temp;
         standard_metadata.egress_spec = port;
     }
 
@@ -140,13 +160,26 @@ control MyIngress(inout headers hdr,
     }
 
     action get() {
-        // bit<32> ver = hdr.kvs.version;
+        bit<32> ver = hdr.kvs.version;
 
-        database.read(hdr.response.value, (bit<32>)hdr.kvs.first);
+        database.read(hdr.response[0].value, (bit<32>)hdr.kvs.first + 1025 * ver);
+        notNull.read(hdr.response[0].notNull, (bit<32>)(hdr.kvs.first));
+
+        bit<32> latest = 0;
+        latestVer.read(latest, (bit<32>)(hdr.kvs.first));
+        if (hdr.kvs.version > latest - 1) {
+            hdr.response[0].notNull = 0;
+        }
+
     }
 
     action put() {
-        database.write((bit<32>)hdr.kvs.first, hdr.kvs.second);
+        bit<32> ver = 0;
+        latestVer.read(ver, (bit<32>)hdr.kvs.first);
+        database.write((bit<32>)hdr.kvs.first + 1025 * ver, hdr.kvs.second);
+        notNull.write((bit<32>)hdr.kvs.first, 1);
+        ver = ver + 1;
+        latestVer.write((bit<32>)hdr.kvs.first, ver);
     }
 
     table ipv4_lpm {
@@ -175,13 +208,19 @@ control MyIngress(inout headers hdr,
     }
 
     apply {
-        if (hdr.ethernet.etherType == TYPE_IPV4) {
+        // if (hdr.ethernet.etherType == TYPE_IPV4) {
+        //     ipv4_lpm.apply();
+        //     if (hdr.tcp.dstPort == 0x1234) {
+        //         kvs.apply();
+        //         hdr.kvs.first = 0;
+        //         hdr.kvs.second = 0;
+        //     } 
+        // }
+        if (hdr.response[0].isValid()) {
             ipv4_lpm.apply();
-            
+            kvs.apply();    
         }
-        if (hdr.tcp.dstPort == 0x1234) {
-                kvs.apply();
-            }
+        
         
     }
 }
