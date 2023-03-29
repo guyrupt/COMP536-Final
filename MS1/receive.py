@@ -16,14 +16,16 @@ from scapy.layers.inet import _IPOption_HDR
 
 from scapy.all import IP, TCP, Ether, get_if_hwaddr, get_if_list, sendp, Packet, BitField,bind_layers,XByteField
 
-from send import KVS
-# class KVS(Packet):
-#     name = "KVS"
-#     fields_desc = [ XByteField("operation",0),
-#                     ShortField("first",2000),
-#                     BitField("second",2000,32)]
+from send import KVS, Response
 
-bind_layers(TCP, KVS)
+RESPONSE_PTC = 0x1234
+KVS_PTC = 145
+
+bind_layers(Ether, Response, type=RESPONSE_PTC)
+bind_layers(Response, Response, nextHeader=0)
+bind_layers(Response, IP, nextHeader=1)
+bind_layers(IP, KVS, proto=KVS_PTC)
+bind_layers(KVS, TCP, protocol=6)
 
 
 def get_if():
@@ -51,12 +53,21 @@ class IPOption_MRI(IPOption):
                                    IntField("", 0),
                                    length_from=lambda pkt:pkt.count*4) ]
 def handle_pkt(pkt):
-    if TCP in pkt and pkt[TCP].sport == 1234:
+    # print("got a packet")
+    # pkt.show2()
+    if KVS in pkt and pkt[TCP].sport == 1234:
         print("got a packet")
         pkt.show2()
     #    hexdump(pkt)
+        if pkt[KVS].operation == 1:
+            if pkt[Response].notNull == 1:
+                print(f'value: {pkt[Response].value}')
+            else:
+                print('value is null')
+        elif pkt[KVS].operation == 2:
+            print('inserted')
         sys.stdout.flush()
-        print(pkt[TCP].payload)
+        print(pkt[Response].payload)
 
 
 def main():

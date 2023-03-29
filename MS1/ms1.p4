@@ -4,6 +4,7 @@
 
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<8> TYPE_TCP = 6;
+const bit<8> TYPE_KVS = 145;
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -54,8 +55,7 @@ header kvs_t {
     bit<16> first;
     bit<32> second;
     bit<32> version;
-    bit<1> responseStatus;
-    bit<15> reserved;
+    bit<8> protocol;
 }
 
 header response_t {
@@ -66,7 +66,6 @@ header response_t {
 }
 
 struct metadata {
-    bit<16> ecmp_select;
 }
 
 struct headers {
@@ -91,7 +90,15 @@ parser MyParser(packet_in packet,
     state parse_ethernet {
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
-            TYPE_IPV4: parse_ipv4;
+            0x1234: parse_response;
+            default: accept;
+        }
+    }
+    state parse_response {
+        packet.extract(hdr.response.next);
+        transition select(hdr.response.last.nextHeader){
+            0: parse_response;
+            1: parse_ipv4;
             default: accept;
         }
     }
@@ -99,31 +106,21 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol) {
             TYPE_TCP: parse_tcp;
-            default: accept;
-        }
-    }
-    state parse_tcp {
-        packet.extract(hdr.tcp);
-        transition select(hdr.tcp.dstPort) {
-            0x1234: parse_kvs;
+            TYPE_KVS: parse_kvs;
             default: accept;
         }
     }
     state parse_kvs {
         packet.extract(hdr.kvs);
-        transition select(hdr.kvs.responseStatus) {
-            1: parse_response;
+        transition select(hdr.kvs.protocol) {
+            TYPE_TCP: parse_tcp;
             default: accept;
         }
     }
-
-    state parse_response {
-        packet.extract(hdr.response.next);
-        transition select(hdr.response.last.nextHeader){
-            0: parse_response;
-            default: accept;
-        }
-    }
+    state parse_tcp {
+        packet.extract(hdr.tcp);
+        transition accept;
+    }   
 }
 
 /*************************************************************************
@@ -216,9 +213,9 @@ control MyIngress(inout headers hdr,
         //         hdr.kvs.second = 0;
         //     } 
         // }
-        if (hdr.response[0].isValid()) {
+        if(hdr.response[0].isValid()){
             ipv4_lpm.apply();
-            kvs.apply();    
+            kvs.apply();
         }
         
         
@@ -232,7 +229,13 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-    apply {  }
+    apply {  
+        if (hdr.response[0].isValid() && hdr.kvs.op == 3) {
+            if ((bit<32>)hdr.kvs.first < hdr.kvs.second) {
+                recirculate_preserving_field_list(1);
+            }
+        }
+    }
 }
 
 /*************************************************************************
@@ -267,10 +270,10 @@ control MyDeparser(packet_out packet,
                    in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
-        packet.emit(hdr.ipv4);
-        packet.emit(hdr.tcp);
-        packet.emit(hdr.kvs);
         packet.emit(hdr.response);
+        packet.emit(hdr.ipv4);
+        packet.emit(hdr.kvs);
+        packet.emit(hdr.tcp);
     }
 }
 

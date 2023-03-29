@@ -3,18 +3,32 @@ import random
 import socket
 import sys
 
-from scapy.all import IP, TCP, Ether, get_if_hwaddr, get_if_list, sendp, Packet, BitField,bind_layers,XByteField,ShortField
+from scapy.all import IP, TCP, Ether, get_if_hwaddr, get_if_list, \
+sendp, Packet, BitField,bind_layers,XByteField,ShortField, IntField
+
+RESPONSE_PTC = 0x1234
+KVS_PTC = 145
+
 class KVS(Packet):
     name = "KVS"
     fields_desc = [ XByteField("operation",0),
                     ShortField("first",2000),
                     BitField("second",2000,32),
                     BitField("version",0,32),
-                    BitField("responseStatus",0,1),
-                    BitField("reserved", 0,15),
-                    ]
+                    BitField("protocol",0,8),]
 
-bind_layers(TCP, KVS)
+class Response(Packet):
+    name = "Response"
+    fields_desc = [ IntField("value",0),
+                    BitField("notNull", 0, 1),
+                    BitField("nextHeader", 0, 1),
+                    BitField("reserved", 0, 6),]
+
+bind_layers(Ether, Response, type=RESPONSE_PTC)
+bind_layers(Response, Response, nextHeader=0)
+bind_layers(Response, IP, nextHeader=1)
+bind_layers(IP, KVS, proto=KVS_PTC)
+bind_layers(KVS, TCP, protocol=6)
 
 def get_if():
     ifs=get_if_list()
@@ -30,52 +44,65 @@ def get_if():
 
 def main():
 
-    if len(sys.argv)<3:
-        print('pass 2 arguments: <destination> "<message>"')
+    if len(sys.argv)<2:
+        print('pass arguments: <operation> <options>')
         exit(1)
-
-    addr = socket.gethostbyname(sys.argv[1])
+    print(sys.argv)
+    addr = "10.0.1.1"
     iface = get_if()
 
     print("sending on interface %s to %s" % (iface, str(addr)))
     pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
-    op=0
-    fir=0
-    sec=0
-    if sys.argv[2]=='GET':
-        op=1
-        fir=int(sys.argv[3])
-    elif sys.argv[2]=='PUT':
-        op=2
-        fir=int(sys.argv[3])
-        sec=int(sys.argv[4])
-    elif sys.argv[2]=='RANGE':
-        op=3
-        fir=int(sys.argv[3])
-        sec=int(sys.argv[4])
-    elif sys.argv[2]=='SELECT':
-        op=3
-        operand = ''.join(i for i in sys.argv[3] if not i.isdigit())
-        import re
-        val=int(re.findall('\d+', sys.argv[3] )[0])
-        if operand=='=':
-            fir=val
-            sec=val
-        elif operand=='<':
-            fir=0
-            sec=val-1
-        elif operand=='<=':
-            fir=0
-            sec=val
-        elif operand=='>':
-            fir=val+1
-            sec=1024
-        elif operand=='>=':
-            fir=val
-            sec=1024
+    pkt = pkt / Response()
 
+    if sys.argv[1]=='GET':
+        print('GET')
+        if len(sys.argv) < 4:
+            print('pass 2 more arguments:"<key>" "<version>"')
+            exit(1)
+        if int(sys.argv[2]) > 1025 or int(sys.argv[2]) < 0:
+            print('key out of range')
+            exit(1)
+        pkt = pkt / IP(dst=addr)
+        pkt = pkt / KVS(operation=1, first=int(sys.argv[2]), second=0, version=int(sys.argv[3]))
+        pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
+    elif sys.argv[1]=='PUT':
+        print('PUT')
+        if len(sys.argv) < 4:
+            print('pass 2 more arguments:"<key>" "<value>"')
+            exit(1)
+        if int(sys.argv[2]) > 1025 or int(sys.argv[2]) < 0:
+            print('key out of range')
+            exit(1)
+        
+        pkt = pkt / IP(dst=addr)
+        pkt = pkt / KVS(operation=2, first=int(sys.argv[2]), second=int(sys.argv[3]))
+        pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
+    # elif sys.argv[2]=='RANGE':
+    #     op=3
+    #     fir=int(sys.argv[3])
+    #     sec=int(sys.argv[4])
+    # elif sys.argv[2]=='SELECT':
+    #     op=3
+    #     operand = ''.join(i for i in sys.argv[3] if not i.isdigit())
+    #     import re
+    #     val=int(re.findall('\d+', sys.argv[3] )[0])
+    #     if operand=='=':
+    #         fir=val
+    #         sec=val
+    #     elif operand=='<':
+    #         fir=0
+    #         sec=val-1
+    #     elif operand=='<=':
+    #         fir=0
+    #         sec=val
+    #     elif operand=='>':
+    #         fir=val+1
+    #         sec=1024
+    #     elif operand=='>=':
+    #         fir=val
+    #         sec=1024
 
-    pkt = pkt /IP(dst=addr) / TCP(dport=1234, sport=random.randint(49152,65535)) /KVS(operation=op,first=fir,second=sec) / 'test'
     pkt.show2()
     print('packet size',len(pkt))
     sendp(pkt, iface=iface, verbose=False)
