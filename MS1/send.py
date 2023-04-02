@@ -29,7 +29,7 @@ bind_layers(Response, Response, nextHeader=0)
 bind_layers(Response, IP, nextHeader=1)
 bind_layers(IP, KVS, proto=KVS_PTC)
 bind_layers(KVS, TCP, protocol=6)
-
+     
 def get_if():
     ifs=get_if_list()
     iface=None # "h1-eth0"
@@ -55,7 +55,7 @@ def main():
     pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
     pkt = pkt / Response()
 
-    if sys.argv[1]=='GET':
+    if sys.argv[1] == 'GET':
         print('GET')
         if len(sys.argv) < 4:
             print('pass 2 more arguments:"<key>" "<version>"')
@@ -66,7 +66,11 @@ def main():
         pkt = pkt / IP(dst=addr)
         pkt = pkt / KVS(operation=1, first=int(sys.argv[2]), second=0, version=int(sys.argv[3]))
         pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
-    elif sys.argv[1]=='PUT':
+        pkt.show2()
+        print('packet size',len(pkt))
+        sendp(pkt, iface=iface, verbose=False)
+
+    elif sys.argv[1] == 'PUT':
         print('PUT')
         if len(sys.argv) < 4:
             print('pass 2 more arguments:"<key>" "<value>"')
@@ -78,34 +82,70 @@ def main():
         pkt = pkt / IP(dst=addr)
         pkt = pkt / KVS(operation=2, first=int(sys.argv[2]), second=int(sys.argv[3]))
         pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
-    # elif sys.argv[2]=='RANGE':
-    #     op=3
-    #     fir=int(sys.argv[3])
-    #     sec=int(sys.argv[4])
-    # elif sys.argv[2]=='SELECT':
-    #     op=3
-    #     operand = ''.join(i for i in sys.argv[3] if not i.isdigit())
-    #     import re
-    #     val=int(re.findall('\d+', sys.argv[3] )[0])
-    #     if operand=='=':
-    #         fir=val
-    #         sec=val
-    #     elif operand=='<':
-    #         fir=0
-    #         sec=val-1
-    #     elif operand=='<=':
-    #         fir=0
-    #         sec=val
-    #     elif operand=='>':
-    #         fir=val+1
-    #         sec=1024
-    #     elif operand=='>=':
-    #         fir=val
-    #         sec=1024
+        pkt.show2()
+        print('packet size',len(pkt))
+        sendp(pkt, iface=iface, verbose=False)
 
-    pkt.show2()
-    print('packet size',len(pkt))
-    sendp(pkt, iface=iface, verbose=False)
+    elif sys.argv[1] == 'RANGE':
+        print('RANGE')
+        if len(sys.argv) < 5:
+            print('pass 3 more arguments:"<key1>" "<key2>" "<versionNum>"')
+            exit(1)
+        if int(sys.argv[2]) > 1025 or int(sys.argv[2]) < 0:
+            print('key out of range')
+            exit(1)
+
+        op=3
+        first=int(sys.argv[2])
+        second=int(sys.argv[3])
+        version=int(sys.argv[4])
+        num_keys = second - first + 1
+
+        for i in range(first, num_keys, 10):
+            end = i + (9 if (second - i) // 10 else (second - i))
+            print(i, end)
+            pkt = pkt / IP(dst=addr)
+            pkt = pkt / KVS(operation=op, first=i, second=end, version=version)
+            pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
+            sendp(pkt, iface=iface, verbose=False)
+
+    elif sys.argv[1] == 'SELECT':
+        op=4
+        if len(sys.argv) < 5:
+            print('pass 3 more arguments:"<operand>" "<value>" "<versionNum>"')
+            exit(1)
+        if int(sys.argv[3]) > 1025 or int(sys.argv[3]) < 0:
+            print('key out of range')
+            exit(1)
+
+        operand = sys.argv[2]
+        select = 0
+        if operand == '<':
+            select = 0x401
+        elif operand == '>':
+            select = 0x402
+        elif operand == '<=':
+            select = 0x403
+        elif operand == '>=':
+            select = 0x404
+        elif operand == '==':
+            select = 0x405
+        else:
+            print('invalid operand')
+            exit(1)
+            
+        for i in range(first, num_keys, 10):
+            end = i + (9 if (second - i) // 10 else (second - i))
+            print(i, end)
+            pkt = pkt / IP(dst=addr)
+            pkt = pkt / KVS(operation=op, first=i, second=end, version=version)
+            pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
+            sendp(pkt, iface=iface, verbose=False)
+
+
+    # pkt.show2()
+    # print('packet size',len(pkt))
+    # sendp(pkt, iface=iface, verbose=False)
 
 
 if __name__ == '__main__':

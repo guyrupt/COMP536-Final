@@ -11,9 +11,16 @@
         ["tmp_3", 32, false],
         ["tmp_4", 32, false],
         ["tmp_5", 32, false],
-        ["temp_0", 16, false],
+        ["tmp_6", 32, false],
+        ["tmp_7", 32, false],
+        ["tmp_8", 32, false],
+        ["tmp_9", 32, false],
+        ["tmp_10", 32, false],
+        ["tmp_11", 32, false],
         ["latest_0", 32, false],
-        ["ver_1", 32, false]
+        ["ver_1", 32, false],
+        ["latest_1", 32, false],
+        ["metadata.circulate_index", 16, false]
       ]
     },
     {
@@ -7339,8 +7346,13 @@
   "field_lists" : [
     {
       "id" : 1,
-      "name" : "empty",
-      "elements" : []
+      "name" : "field_list0",
+      "elements" : [
+        {
+          "type" : "field",
+          "value" : ["scalars", "metadata.circulate_index"]
+        }
+      ]
     }
   ],
   "errors" : [
@@ -7545,7 +7557,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 269,
+        "line" : 343,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -7561,7 +7573,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 143,
+        "line" : 151,
         "column" : 29,
         "source_fragment" : "database"
       },
@@ -7573,7 +7585,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 144,
+        "line" : 152,
         "column" : 29,
         "source_fragment" : "latestVer"
       },
@@ -7585,7 +7597,7 @@
       "id" : 2,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 145,
+        "line" : 153,
         "column" : 28,
         "source_fragment" : "notNull"
       },
@@ -7599,7 +7611,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 247,
+        "line" : 321,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
@@ -7655,8 +7667,20 @@
   "learn_lists" : [],
   "actions" : [
     {
-      "name" : "MyIngress.set_nhop",
+      "name" : "NoAction",
       "id" : 0,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "NoAction",
+      "id" : 1,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "MyIngress.set_nhop",
+      "id" : 2,
       "runtime_data" : [
         {
           "name" : "dstAddr",
@@ -7682,66 +7706,9 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 148,
+            "line" : 156,
             "column" : 8,
             "source_fragment" : "hdr.ipv4.dstAddr = dstAddr"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "temp_0"]
-            },
-            {
-              "type" : "field",
-              "value" : ["tcp", "srcPort"]
-            }
-          ],
-          "source_info" : {
-            "filename" : "ms1.p4",
-            "line" : 149,
-            "column" : 8,
-            "source_fragment" : "port_t temp = hdr.tcp.srcPort;"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["tcp", "srcPort"]
-            },
-            {
-              "type" : "field",
-              "value" : ["tcp", "dstPort"]
-            }
-          ],
-          "source_info" : {
-            "filename" : "ms1.p4",
-            "line" : 150,
-            "column" : 8,
-            "source_fragment" : "hdr.tcp.srcPort = hdr.tcp.dstPort"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["tcp", "dstPort"]
-            },
-            {
-              "type" : "field",
-              "value" : ["scalars", "temp_0"]
-            }
-          ],
-          "source_info" : {
-            "filename" : "ms1.p4",
-            "line" : 151,
-            "column" : 8,
-            "source_fragment" : "hdr.tcp.dstPort = temp"
           }
         },
         {
@@ -7758,7 +7725,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 152,
+            "line" : 157,
             "column" : 8,
             "source_fragment" : "standard_metadata.egress_spec = port"
           }
@@ -7767,7 +7734,7 @@
     },
     {
       "name" : "MyIngress.drop",
-      "id" : 1,
+      "id" : 3,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -7780,29 +7747,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 156,
-            "column" : 8,
-            "source_fragment" : "mark_to_drop(standard_metadata)"
-          }
-        }
-      ]
-    },
-    {
-      "name" : "MyIngress.drop",
-      "id" : 2,
-      "runtime_data" : [],
-      "primitives" : [
-        {
-          "op" : "mark_to_drop",
-          "parameters" : [
-            {
-              "type" : "header",
-              "value" : "standard_metadata"
-            }
-          ],
-          "source_info" : {
-            "filename" : "ms1.p4",
-            "line" : 156,
+            "line" : 161,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -7811,7 +7756,7 @@
     },
     {
       "name" : "MyIngress.get",
-      "id" : 3,
+      "id" : 4,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -7881,7 +7826,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 162,
+            "line" : 167,
             "column" : 45,
             "source_fragment" : "(bit<32>)hdr.kvs.first + 1025 * ver"
           }
@@ -7904,7 +7849,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 162,
+            "line" : 167,
             "column" : 8,
             "source_fragment" : "database.read(hdr.response[0].value, (bit<32>)hdr.kvs.first + 1025 * ver)"
           }
@@ -7936,7 +7881,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 163,
+            "line" : 168,
             "column" : 46,
             "source_fragment" : "(bit<32>)(hdr.kvs.first)"
           }
@@ -7959,7 +7904,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 163,
+            "line" : 168,
             "column" : 8,
             "source_fragment" : "notNull.read(hdr.response[0].notNull, (bit<32>)(hdr.kvs.first))"
           }
@@ -7991,7 +7936,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 166,
+            "line" : 171,
             "column" : 31,
             "source_fragment" : "(bit<32>)(hdr.kvs.first)"
           }
@@ -8014,7 +7959,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 166,
+            "line" : 171,
             "column" : 8,
             "source_fragment" : "latestVer.read(latest, (bit<32>)(hdr.kvs.first))"
           }
@@ -8083,7 +8028,7 @@
     },
     {
       "name" : "MyIngress.put",
-      "id" : 4,
+      "id" : 5,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -8113,7 +8058,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 175,
+            "line" : 180,
             "column" : 28,
             "source_fragment" : "(bit<32>)hdr.kvs.first"
           }
@@ -8136,7 +8081,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 175,
+            "line" : 180,
             "column" : 8,
             "source_fragment" : "latestVer.read(ver, (bit<32>)hdr.kvs.first)"
           }
@@ -8208,7 +8153,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 176,
+            "line" : 181,
             "column" : 23,
             "source_fragment" : "(bit<32>)hdr.kvs.first + 1025 * ver"
           }
@@ -8231,7 +8176,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 176,
+            "line" : 181,
             "column" : 8,
             "source_fragment" : "database.write((bit<32>)hdr.kvs.first + 1025 * ver, hdr.kvs.second)"
           }
@@ -8263,7 +8208,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 177,
+            "line" : 182,
             "column" : 22,
             "source_fragment" : "(bit<32>)hdr.kvs.first"
           }
@@ -8286,7 +8231,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 177,
+            "line" : 182,
             "column" : 8,
             "source_fragment" : "notNull.write((bit<32>)hdr.kvs.first, 1)"
           }
@@ -8328,7 +8273,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 178,
+            "line" : 183,
             "column" : 8,
             "source_fragment" : "ver = ver + 1"
           }
@@ -8360,7 +8305,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 179,
+            "line" : 184,
             "column" : 24,
             "source_fragment" : "(bit<32>)hdr.kvs.first"
           }
@@ -8383,7 +8328,7 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 179,
+            "line" : 184,
             "column" : 8,
             "source_fragment" : "latestVer.write((bit<32>)hdr.kvs.first, ver)"
           }
@@ -8391,8 +8336,1093 @@
       ]
     },
     {
-      "name" : "ms1l235",
-      "id" : 5,
+      "name" : "MyIngress.get_range",
+      "id" : 6,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "push",
+          "parameters" : [
+            {
+              "type" : "header_stack",
+              "value" : "response"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x1"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 190,
+            "column" : 8,
+            "source_fragment" : "hdr.response.push_front(1)"
+          }
+        },
+        {
+          "op" : "add_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "response[0]"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 191,
+            "column" : 8,
+            "source_fragment" : "hdr.response[0].setValid()"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_6"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "+",
+                                  "left" : {
+                                    "type" : "field",
+                                    "value" : ["kvs", "first"]
+                                  },
+                                  "right" : {
+                                    "type" : "field",
+                                    "value" : ["scalars", "metadata.circulate_index"]
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "*",
+                              "left" : {
+                                "type" : "hexstr",
+                                "value" : "0x00000401"
+                              },
+                              "right" : {
+                                "type" : "field",
+                                "value" : ["kvs", "version"]
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 194,
+            "column" : 45,
+            "source_fragment" : "(bit<32>)key + 1025 * ver"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["response[0]", "value"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "MyIngress.database"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_6"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 194,
+            "column" : 8,
+            "source_fragment" : "database.read(hdr.response[0].value, (bit<32>)key + 1025 * ver)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_7"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "+",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["kvs", "first"]
+                          },
+                          "right" : {
+                            "type" : "field",
+                            "value" : ["scalars", "metadata.circulate_index"]
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 195,
+            "column" : 46,
+            "source_fragment" : "(bit<32>)(key)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["response[0]", "notNull"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "MyIngress.notNull"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_7"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 195,
+            "column" : 8,
+            "source_fragment" : "notNull.read(hdr.response[0].notNull, (bit<32>)(key))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_8"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "+",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["kvs", "first"]
+                          },
+                          "right" : {
+                            "type" : "field",
+                            "value" : ["scalars", "metadata.circulate_index"]
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 198,
+            "column" : 31,
+            "source_fragment" : "(bit<32>)(key)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "latest_1"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "MyIngress.latestVer"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_8"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 198,
+            "column" : 8,
+            "source_fragment" : "latestVer.read(latest, (bit<32>)(key))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["response[0]", "notNull"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x00"
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["response[0]", "notNull"]
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : ">",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["kvs", "version"]
+                      },
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "+",
+                              "left" : {
+                                "type" : "field",
+                                "value" : ["scalars", "latest_1"]
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata.circulate_index"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "metadata.circulate_index"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x0001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 203,
+            "column" : 8,
+            "source_fragment" : "meta.circulate_index = meta.circulate_index + 1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.get_range",
+      "id" : 7,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "push",
+          "parameters" : [
+            {
+              "type" : "header_stack",
+              "value" : "response"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x1"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 190,
+            "column" : 8,
+            "source_fragment" : "hdr.response.push_front(1)"
+          }
+        },
+        {
+          "op" : "add_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "response[0]"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 191,
+            "column" : 8,
+            "source_fragment" : "hdr.response[0].setValid()"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_9"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "+",
+                                  "left" : {
+                                    "type" : "field",
+                                    "value" : ["kvs", "first"]
+                                  },
+                                  "right" : {
+                                    "type" : "field",
+                                    "value" : ["scalars", "metadata.circulate_index"]
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "*",
+                              "left" : {
+                                "type" : "hexstr",
+                                "value" : "0x00000401"
+                              },
+                              "right" : {
+                                "type" : "field",
+                                "value" : ["kvs", "version"]
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 194,
+            "column" : 45,
+            "source_fragment" : "(bit<32>)key + 1025 * ver"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["response[0]", "value"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "MyIngress.database"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_9"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 194,
+            "column" : 8,
+            "source_fragment" : "database.read(hdr.response[0].value, (bit<32>)key + 1025 * ver)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_10"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "+",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["kvs", "first"]
+                          },
+                          "right" : {
+                            "type" : "field",
+                            "value" : ["scalars", "metadata.circulate_index"]
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 195,
+            "column" : 46,
+            "source_fragment" : "(bit<32>)(key)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["response[0]", "notNull"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "MyIngress.notNull"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_10"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 195,
+            "column" : 8,
+            "source_fragment" : "notNull.read(hdr.response[0].notNull, (bit<32>)(key))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_11"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "+",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["kvs", "first"]
+                          },
+                          "right" : {
+                            "type" : "field",
+                            "value" : ["scalars", "metadata.circulate_index"]
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 198,
+            "column" : 31,
+            "source_fragment" : "(bit<32>)(key)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "latest_1"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "MyIngress.latestVer"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_11"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 198,
+            "column" : 8,
+            "source_fragment" : "latestVer.read(latest, (bit<32>)(key))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["response[0]", "notNull"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x00"
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["response[0]", "notNull"]
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : ">",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["kvs", "version"]
+                      },
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "+",
+                              "left" : {
+                                "type" : "field",
+                                "value" : ["scalars", "latest_1"]
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata.circulate_index"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "metadata.circulate_index"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x0001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 203,
+            "column" : 8,
+            "source_fragment" : "meta.circulate_index = meta.circulate_index + 1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.select_lt",
+      "id" : 8,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "second"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["kvs", "first"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 207,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.second = (bit<32>) hdr.kvs.first - 1"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "first"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 208,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.first = 0"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.select_gt",
+      "id" : 9,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "first"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["kvs", "first"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x0001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 212,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.first = hdr.kvs.first + 1"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "second"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000400"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 213,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.second = 1024"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.select_le",
+      "id" : 10,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "second"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["kvs", "first"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 217,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.second = (bit<32>) hdr.kvs.first"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "first"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 218,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.first = 0"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.select_ge",
+      "id" : 11,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "second"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000400"
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 222,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.second = 1024"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.select_eq",
+      "id" : 12,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["kvs", "second"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["kvs", "first"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 226,
+            "column" : 8,
+            "source_fragment" : "hdr.kvs.second = (bit<32>) hdr.kvs.first"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "ms1l309",
+      "id" : 13,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -8405,9 +9435,9 @@
           ],
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 235,
+            "line" : 309,
             "column" : 16,
-            "source_fragment" : "recirculate_preserving_field_list(1)"
+            "source_fragment" : "recirculate_preserving_field_list(RECIRC_FL)"
           }
         }
       ]
@@ -8419,7 +9449,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 138,
+        "line" : 146,
         "column" : 8,
         "source_fragment" : "MyIngress"
       },
@@ -8430,7 +9460,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 182,
+            "line" : 229,
             "column" : 10,
             "source_fragment" : "ipv4_lpm"
           },
@@ -8448,7 +9478,7 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [0, 1],
+          "action_ids" : [2, 3],
           "actions" : ["MyIngress.set_nhop", "MyIngress.drop"],
           "base_default_next" : "MyIngress.kvs",
           "next_tables" : {
@@ -8456,7 +9486,7 @@
             "MyIngress.drop" : "MyIngress.kvs"
           },
           "default_entry" : {
-            "action_id" : 1,
+            "action_id" : 3,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -8467,7 +9497,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 194,
+            "line" : 241,
             "column" : 10,
             "source_fragment" : "kvs"
           },
@@ -8485,19 +9515,187 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [3, 4, 2],
-          "actions" : ["MyIngress.get", "MyIngress.put", "MyIngress.drop"],
-          "base_default_next" : null,
+          "action_ids" : [4, 5, 6, 0],
+          "actions" : ["MyIngress.get", "MyIngress.put", "MyIngress.get_range", "NoAction"],
+          "base_default_next" : "node_5",
           "next_tables" : {
-            "MyIngress.get" : null,
-            "MyIngress.put" : null,
-            "MyIngress.drop" : null
+            "MyIngress.get" : "node_5",
+            "MyIngress.put" : "node_5",
+            "MyIngress.get_range" : "node_5",
+            "NoAction" : "node_5"
           },
           "default_entry" : {
-            "action_id" : 2,
+            "action_id" : 0,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "MyIngress.select_ops",
+          "id" : 2,
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 253,
+            "column" : 10,
+            "source_fragment" : "select_ops"
+          },
+          "key" : [
+            {
+              "match_type" : "exact",
+              "name" : "hdr.kvs.second",
+              "target" : ["kvs", "second"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 5,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [8, 9, 10, 11, 12, 1],
+          "actions" : ["MyIngress.select_lt", "MyIngress.select_gt", "MyIngress.select_le", "MyIngress.select_ge", "MyIngress.select_eq", "NoAction"],
+          "base_default_next" : "tbl_get_range",
+          "next_tables" : {
+            "MyIngress.select_lt" : "tbl_get_range",
+            "MyIngress.select_gt" : "tbl_get_range",
+            "MyIngress.select_le" : "tbl_get_range",
+            "MyIngress.select_ge" : "tbl_get_range",
+            "MyIngress.select_eq" : "tbl_get_range",
+            "NoAction" : "tbl_get_range"
+          },
+          "default_entry" : {
+            "action_id" : 1,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          },
+          "entries" : [
+            {
+              "source_info" : {
+                "filename" : "ms1.p4",
+                "line" : 267,
+                "column" : 12,
+                "source_fragment" : "SELECT_LT: select_lt()"
+              },
+              "match_key" : [
+                {
+                  "match_type" : "exact",
+                  "key" : "0x00000401"
+                }
+              ],
+              "action_entry" : {
+                "action_id" : 8,
+                "action_data" : []
+              },
+              "priority" : 1
+            },
+            {
+              "source_info" : {
+                "filename" : "ms1.p4",
+                "line" : 268,
+                "column" : 12,
+                "source_fragment" : "SELECT_GT: select_gt()"
+              },
+              "match_key" : [
+                {
+                  "match_type" : "exact",
+                  "key" : "0x00000402"
+                }
+              ],
+              "action_entry" : {
+                "action_id" : 9,
+                "action_data" : []
+              },
+              "priority" : 2
+            },
+            {
+              "source_info" : {
+                "filename" : "ms1.p4",
+                "line" : 269,
+                "column" : 12,
+                "source_fragment" : "SELECT_LE: select_le()"
+              },
+              "match_key" : [
+                {
+                  "match_type" : "exact",
+                  "key" : "0x00000403"
+                }
+              ],
+              "action_entry" : {
+                "action_id" : 10,
+                "action_data" : []
+              },
+              "priority" : 3
+            },
+            {
+              "source_info" : {
+                "filename" : "ms1.p4",
+                "line" : 270,
+                "column" : 12,
+                "source_fragment" : "SELECT_GE: select_ge()"
+              },
+              "match_key" : [
+                {
+                  "match_type" : "exact",
+                  "key" : "0x00000404"
+                }
+              ],
+              "action_entry" : {
+                "action_id" : 11,
+                "action_data" : []
+              },
+              "priority" : 4
+            },
+            {
+              "source_info" : {
+                "filename" : "ms1.p4",
+                "line" : 271,
+                "column" : 12,
+                "source_fragment" : "SELECT_EQ: select_eq()"
+              },
+              "match_key" : [
+                {
+                  "match_type" : "exact",
+                  "key" : "0x00000405"
+                }
+              ],
+              "action_entry" : {
+                "action_id" : 12,
+                "action_data" : []
+              },
+              "priority" : 5
+            }
+          ]
+        },
+        {
+          "name" : "tbl_get_range",
+          "id" : 3,
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 290,
+            "column" : 16,
+            "source_fragment" : "get_range()"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [7],
+          "actions" : ["MyIngress.get_range"],
+          "base_default_next" : null,
+          "next_tables" : {
+            "MyIngress.get_range" : null
+          },
+          "default_entry" : {
+            "action_id" : 7,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
           }
         }
       ],
@@ -8508,7 +9706,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 216,
+            "line" : 284,
             "column" : 11,
             "source_fragment" : "hdr.response[0].isValid()"
           },
@@ -8525,6 +9723,32 @@
           },
           "false_next" : null,
           "true_next" : "MyIngress.ipv4_lpm"
+        },
+        {
+          "name" : "node_5",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "ms1.p4",
+            "line" : 288,
+            "column" : 16,
+            "source_fragment" : "hdr.kvs.op == 4"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["kvs", "op"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x04"
+              }
+            }
+          },
+          "false_next" : null,
+          "true_next" : "MyIngress.select_ops"
         }
       ]
     },
@@ -8533,20 +9757,20 @@
       "id" : 1,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 229,
+        "line" : 303,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
-      "init_table" : "node_7",
+      "init_table" : "node_10",
       "tables" : [
         {
-          "name" : "tbl_ms1l235",
-          "id" : 2,
+          "name" : "tbl_ms1l309",
+          "id" : 4,
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 235,
+            "line" : 309,
             "column" : 16,
-            "source_fragment" : "recirculate_preserving_field_list(1)"
+            "source_fragment" : "recirculate_preserving_field_list(RECIRC_FL)"
           },
           "key" : [],
           "match_type" : "exact",
@@ -8555,14 +9779,14 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [5],
-          "actions" : ["ms1l235"],
+          "action_ids" : [13],
+          "actions" : ["ms1l309"],
           "base_default_next" : null,
           "next_tables" : {
-            "ms1l235" : null
+            "ms1l309" : null
           },
           "default_entry" : {
-            "action_id" : 5,
+            "action_id" : 13,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -8572,13 +9796,13 @@
       "action_profiles" : [],
       "conditionals" : [
         {
-          "name" : "node_7",
-          "id" : 1,
+          "name" : "node_10",
+          "id" : 2,
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 233,
+            "line" : 307,
             "column" : 12,
-            "source_fragment" : "hdr.response[0].isValid() && hdr.kvs.op == 3"
+            "source_fragment" : "hdr.response[0].isValid() && (hdr.kvs.op == 3 || hdr.kvs.op == 4)"
           },
           "expression" : {
             "type" : "expression",
@@ -8598,42 +9822,82 @@
               "right" : {
                 "type" : "expression",
                 "value" : {
-                  "op" : "==",
+                  "op" : "or",
                   "left" : {
-                    "type" : "field",
-                    "value" : ["kvs", "op"]
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "==",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["kvs", "op"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x03"
+                      }
+                    }
                   },
                   "right" : {
-                    "type" : "hexstr",
-                    "value" : "0x03"
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "==",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["kvs", "op"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x04"
+                      }
+                    }
                   }
                 }
               }
             }
           },
           "false_next" : null,
-          "true_next" : "node_8"
+          "true_next" : "node_11"
         },
         {
-          "name" : "node_8",
-          "id" : 2,
+          "name" : "node_11",
+          "id" : 3,
           "source_info" : {
             "filename" : "ms1.p4",
-            "line" : 234,
+            "line" : 308,
             "column" : 16,
-            "source_fragment" : "(bit<32>)hdr.kvs.first < hdr.kvs.second"
+            "source_fragment" : "(bit<32>)(hdr.kvs.first + meta.circulate_index) <= hdr.kvs.second"
           },
           "expression" : {
             "type" : "expression",
             "value" : {
-              "op" : "<",
+              "op" : "<=",
               "left" : {
                 "type" : "expression",
                 "value" : {
                   "op" : "&",
                   "left" : {
-                    "type" : "field",
-                    "value" : ["kvs", "first"]
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "+",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["kvs", "first"]
+                          },
+                          "right" : {
+                            "type" : "field",
+                            "value" : ["scalars", "metadata.circulate_index"]
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffff"
+                      }
+                    }
                   },
                   "right" : {
                     "type" : "hexstr",
@@ -8648,7 +9912,7 @@
             }
           },
           "false_next" : null,
-          "true_next" : "tbl_ms1l235"
+          "true_next" : "tbl_ms1l309"
         }
       ]
     }
@@ -8659,7 +9923,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "ms1.p4",
-        "line" : 247,
+        "line" : 321,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },

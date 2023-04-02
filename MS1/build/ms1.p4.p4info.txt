@@ -40,9 +40,55 @@ tables {
     id: 32427501
   }
   action_refs {
-    id: 25652968
+    id: 26649774
+  }
+  action_refs {
+    id: 21257015
+    annotations: "@defaultonly"
+    scope: DEFAULT_ONLY
   }
   size: 1024
+}
+tables {
+  preamble {
+    id: 47667306
+    name: "MyIngress.select_ops"
+    alias: "select_ops"
+  }
+  match_fields {
+    id: 1
+    name: "hdr.kvs.second"
+    bitwidth: 32
+    match_type: EXACT
+  }
+  action_refs {
+    id: 33374233
+  }
+  action_refs {
+    id: 33551113
+  }
+  action_refs {
+    id: 20899042
+  }
+  action_refs {
+    id: 32354016
+  }
+  action_refs {
+    id: 33098181
+  }
+  action_refs {
+    id: 21257015
+  }
+  size: 1024
+  is_const_table: true
+}
+actions {
+  preamble {
+    id: 21257015
+    name: "NoAction"
+    alias: "NoAction"
+    annotations: "@noWarn(\"unused\")"
+  }
 }
 actions {
   preamble {
@@ -80,6 +126,48 @@ actions {
     id: 32427501
     name: "MyIngress.put"
     alias: "put"
+  }
+}
+actions {
+  preamble {
+    id: 26649774
+    name: "MyIngress.get_range"
+    alias: "get_range"
+  }
+}
+actions {
+  preamble {
+    id: 33374233
+    name: "MyIngress.select_lt"
+    alias: "select_lt"
+  }
+}
+actions {
+  preamble {
+    id: 33551113
+    name: "MyIngress.select_gt"
+    alias: "select_gt"
+  }
+}
+actions {
+  preamble {
+    id: 20899042
+    name: "MyIngress.select_le"
+    alias: "select_le"
+  }
+}
+actions {
+  preamble {
+    id: 32354016
+    name: "MyIngress.select_ge"
+    alias: "select_ge"
+  }
+}
+actions {
+  preamble {
+    id: 33098181
+    name: "MyIngress.select_eq"
+    alias: "select_eq"
   }
 }
 registers {

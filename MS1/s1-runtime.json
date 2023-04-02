@@ -3,12 +3,7 @@
   "p4info": "build/ms1.p4.p4info.txt",
   "bmv2_json": "build/ms1.json",
   "table_entries": [
-    {
-      "table": "MyIngress.kvs",
-      "default_action": true,
-      "action_name": "MyIngress.drop",
-      "action_params": {}
-    },
+    
     {
       "table": "MyIngress.kvs",
       "match": {
@@ -23,6 +18,14 @@
         "hdr.kvs.op": 2
       },
       "action_name": "MyIngress.put",
+      "action_params": {}
+    },
+    {
+      "table": "MyIngress.kvs",
+      "match": {
+        "hdr.kvs.op": 3
+      },
+      "action_name": "MyIngress.get_range",
       "action_params": {}
     },
     {

@@ -52,10 +52,21 @@ class IPOption_MRI(IPOption):
                                    [],
                                    IntField("", 0),
                                    length_from=lambda pkt:pkt.count*4) ]
+def get_packet_layers(packet):
+    counter = 0
+    while True:
+        layer = packet.getlayer(counter)
+        if layer is None:
+            break
+
+        yield layer
+        counter += 1
+
 def handle_pkt(pkt):
-    # print("got a packet")
-    # pkt.show2()
-    if KVS in pkt and pkt[TCP].sport == 1234:
+    # if KVS in pkt:
+    #     print("got a packet")
+    #     pkt.show2()
+    if KVS in pkt and pkt[TCP].dport == 1234:
         print("got a packet")
         pkt.show2()
     #    hexdump(pkt)
@@ -64,8 +75,19 @@ def handle_pkt(pkt):
                 print(f'value: {pkt[Response].value}')
             else:
                 print('value is null')
+
         elif pkt[KVS].operation == 2:
             print('inserted')
+        
+        elif pkt[KVS].operation == 3 or pkt[KVS].operation == 4:
+            print('range query')
+            for hdr in reversed(list(get_packet_layers(pkt))):
+                if hdr.name == "Response" and hdr.nextHeader == 0:
+                    if hdr.notNull == 1:
+                        print(f'value: {hdr.value}')
+                    else:
+                        print('value is null')
+                        
         sys.stdout.flush()
         print(pkt[Response].payload)
 
