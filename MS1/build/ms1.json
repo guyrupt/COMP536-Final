@@ -20,7 +20,7 @@
         ["latest_0", 32, false],
         ["ver_1", 32, false],
         ["latest_1", 32, false],
-        ["metadata.circulate_index", 16, false]
+        ["userMetadata.circulate_index", 16, false]
       ]
     },
     {
@@ -7350,7 +7350,7 @@
       "elements" : [
         {
           "type" : "field",
-          "value" : ["scalars", "metadata.circulate_index"]
+          "value" : ["scalars", "userMetadata.circulate_index"]
         }
       ]
     }
@@ -8409,7 +8409,7 @@
                                   },
                                   "right" : {
                                     "type" : "field",
-                                    "value" : ["scalars", "metadata.circulate_index"]
+                                    "value" : ["scalars", "userMetadata.circulate_index"]
                                   }
                                 }
                               },
@@ -8516,7 +8516,7 @@
                           },
                           "right" : {
                             "type" : "field",
-                            "value" : ["scalars", "metadata.circulate_index"]
+                            "value" : ["scalars", "userMetadata.circulate_index"]
                           }
                         }
                       },
@@ -8591,7 +8591,7 @@
                           },
                           "right" : {
                             "type" : "field",
-                            "value" : ["scalars", "metadata.circulate_index"]
+                            "value" : ["scalars", "userMetadata.circulate_index"]
                           }
                         }
                       },
@@ -8704,7 +8704,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "metadata.circulate_index"]
+              "value" : ["scalars", "userMetadata.circulate_index"]
             },
             {
               "type" : "expression",
@@ -8718,7 +8718,7 @@
                       "op" : "+",
                       "left" : {
                         "type" : "field",
-                        "value" : ["scalars", "metadata.circulate_index"]
+                        "value" : ["scalars", "userMetadata.circulate_index"]
                       },
                       "right" : {
                         "type" : "hexstr",
@@ -8817,7 +8817,7 @@
                                   },
                                   "right" : {
                                     "type" : "field",
-                                    "value" : ["scalars", "metadata.circulate_index"]
+                                    "value" : ["scalars", "userMetadata.circulate_index"]
                                   }
                                 }
                               },
@@ -8924,7 +8924,7 @@
                           },
                           "right" : {
                             "type" : "field",
-                            "value" : ["scalars", "metadata.circulate_index"]
+                            "value" : ["scalars", "userMetadata.circulate_index"]
                           }
                         }
                       },
@@ -8999,7 +8999,7 @@
                           },
                           "right" : {
                             "type" : "field",
-                            "value" : ["scalars", "metadata.circulate_index"]
+                            "value" : ["scalars", "userMetadata.circulate_index"]
                           }
                         }
                       },
@@ -9112,7 +9112,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "metadata.circulate_index"]
+              "value" : ["scalars", "userMetadata.circulate_index"]
             },
             {
               "type" : "expression",
@@ -9126,7 +9126,7 @@
                       "op" : "+",
                       "left" : {
                         "type" : "field",
-                        "value" : ["scalars", "metadata.circulate_index"]
+                        "value" : ["scalars", "userMetadata.circulate_index"]
                       },
                       "right" : {
                         "type" : "hexstr",
@@ -9889,7 +9889,7 @@
                           },
                           "right" : {
                             "type" : "field",
-                            "value" : ["scalars", "metadata.circulate_index"]
+                            "value" : ["scalars", "userMetadata.circulate_index"]
                           }
                         }
                       },
