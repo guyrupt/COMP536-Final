@@ -101,13 +101,15 @@ def main():
         version=int(sys.argv[4])
         num_keys = second - first + 1
 
-        for i in range(first, num_keys, 10):
+        for i in range(first, second + 1, 10):
+            pkt0 = pkt.copy()
             end = i + (9 if (second - i) // 10 else (second - i))
             print(i, end)
-            pkt = pkt / IP(dst=addr)
-            pkt = pkt / KVS(operation=op, first=i, second=end, version=version)
-            pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
-            sendp(pkt, iface=iface, verbose=False)
+            pkt0 = pkt0 / IP(dst=addr)
+            pkt0 = pkt0/ KVS(operation=op, first=i, second=end, version=version)
+            pkt0 = pkt0 / TCP(dport=1234, sport=random.randint(49152,65535))
+            sendp(pkt0, iface=iface, verbose=False)
+            print(pkt0)
 
     elif sys.argv[1] == 'SELECT':
         op=4
