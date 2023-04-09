@@ -6,11 +6,6 @@ const bit<16> TYPE_IPV4 = 0x800;
 const bit<8> TYPE_TCP = 6;
 const bit<8> TYPE_KVS = 145;
 const bit<8> RECIRC_FL = 0;
-const bit<32> SELECT_LT = 0x401;
-const bit<32> SELECT_GT = 0x402;
-const bit<32> SELECT_LE = 0x403;
-const bit<32> SELECT_GE = 0x404;
-const bit<32> SELECT_EQ = 0x405;
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -250,27 +245,6 @@ control MyIngress(inout headers hdr,
         size = 1024;
     }
 
-    table select_ops {
-        key = {
-            hdr.kvs.second: exact;
-        }
-        actions = {
-            select_lt;
-            select_gt;
-            select_le;
-            select_ge;
-            select_eq;
-            NoAction;
-        }
-        default_action = NoAction;
-        const entries = {
-            SELECT_LT: select_lt();
-            SELECT_GT: select_gt();
-            SELECT_LE: select_le();
-            SELECT_GE: select_ge();
-            SELECT_EQ: select_eq();
-        }
-    }
 
     apply {
         // if (hdr.ethernet.etherType == TYPE_IPV4) {
@@ -285,11 +259,6 @@ control MyIngress(inout headers hdr,
             ipv4_lpm.apply();
             kvs.apply();
             
-            if (hdr.kvs.op == 4) {
-                select_ops.apply();
-                get_range();
-            }
-
         }
         
         

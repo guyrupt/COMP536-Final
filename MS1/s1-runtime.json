@@ -29,6 +29,14 @@
       "action_params": {}
     },
     {
+      "table": "MyIngress.kvs",
+      "match": {
+        "hdr.kvs.op": 4
+      },
+      "action_name": "MyIngress.get_range",
+      "action_params": {}
+    },
+    {
       "table": "MyIngress.ipv4_lpm",
       "match": {
         "hdr.ipv4.dstAddr": [
