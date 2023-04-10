@@ -6,11 +6,6 @@ const bit<16> TYPE_IPV4 = 0x800;
 const bit<8> TYPE_TCP = 6;
 const bit<8> TYPE_KVS = 145;
 const bit<8> RECIRC_FL = 0;
-const bit<32> SELECT_LT = 0x401;
-const bit<32> SELECT_GT = 0x402;
-const bit<32> SELECT_LE = 0x403;
-const bit<32> SELECT_GE = 0x404;
-const bit<32> SELECT_EQ = 0x405;
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -148,159 +143,21 @@ control MyIngress(inout headers hdr,
                   inout standard_metadata_t standard_metadata) {
     
     // register <bit<32>>(1025) database;
-    register <bit<32>>(6150) database;
-    register <bit<32>>(1025) latestVer;
-    register <bit<1>>(1025) notNull;
-
-    action set_nhop(ip4Addr_t dstAddr, egressSpec_t port) {
-        if (hdr.kvs.first<=512) {
-            standard_metadata.egress_spec = 2;
-        }
-        else{
-            standard_metadata.egress_spec = 3;
-        }
-        hdr.ipv4.dstAddr = dstAddr;
-    }
-
-    action drop() {
-        mark_to_drop(standard_metadata);
-    }
-
-    action get() {
-        bit<32> ver = hdr.kvs.version;
-
-        database.read(hdr.response[0].value, (bit<32>)hdr.kvs.first + 1025 * ver);
-        notNull.read(hdr.response[0].notNull, (bit<32>)(hdr.kvs.first));
-
-        bit<32> latest = 0;
-        latestVer.read(latest, (bit<32>)(hdr.kvs.first));
-        if (hdr.kvs.version > latest - 1) {
-            hdr.response[0].notNull = 0;
-        }
-
-    }
-
-    action put() {
-        bit<32> ver = 0;
-        latestVer.read(ver, (bit<32>)hdr.kvs.first);
-        database.write((bit<32>)hdr.kvs.first + 1025 * ver, hdr.kvs.second);
-        notNull.write((bit<32>)hdr.kvs.first, 1);
-        ver = ver + 1;
-        latestVer.write((bit<32>)hdr.kvs.first, ver);
-    }
-    
-    action get_range() {
-        bit<32> ver = hdr.kvs.version;
-
-        hdr.response.push_front(1);
-        hdr.response[0].setValid();
-
-        bit<16> key = hdr.kvs.first + meta.circulate_index;
-        database.read(hdr.response[0].value, (bit<32>)key + 1025 * ver);
-        notNull.read(hdr.response[0].notNull, (bit<32>)(key));
-
-        bit<32> latest = 0;
-        latestVer.read(latest, (bit<32>)(key));
-        if (hdr.kvs.version > latest - 1) {
-            hdr.response[0].notNull = 0;
-        }
-
-        meta.circulate_index = meta.circulate_index + 1;
-    }
-
-    action select_lt() {
-        hdr.kvs.second = (bit<32>) hdr.kvs.first - 1;
-        hdr.kvs.first = 0;
-    }
-
-    action select_gt() {
-        hdr.kvs.first = hdr.kvs.first + 1;
-        hdr.kvs.second = 1024;
-    }
-
-    action select_le() {
-        hdr.kvs.second = (bit<32>) hdr.kvs.first;
-        hdr.kvs.first = 0;
-    }
-
-    action select_ge() {
-        hdr.kvs.second = 1024;
-    }
-
-    action select_eq() {
-        hdr.kvs.second = (bit<32>) hdr.kvs.first;
-    }
-
-    action select_s1() {
-
-    }
-
-    table ipv4_lpm {
-        key = {
-            hdr.ipv4.dstAddr: lpm;
-        }
-        actions = {
-            set_nhop;
-            drop;
-        }
-        size = 1024;
-        default_action = drop();
-    }
-
-    table kvs {
-        key = {
-            hdr.kvs.op: exact;
-        }
-        actions = {
-            get;
-            put;
-            get_range;
-        }
-        size = 1024;
-    }
-
-    table select_ops {
-        key = {
-            hdr.kvs.second: exact;
-        }
-        actions = {
-            select_lt;
-            select_gt;
-            select_le;
-            select_ge;
-            select_eq;
-            NoAction;
-        }
-        default_action = NoAction;
-        const entries = {
-            SELECT_LT: select_lt();
-            SELECT_GT: select_gt();
-            SELECT_LE: select_le();
-            SELECT_GE: select_ge();
-            SELECT_EQ: select_eq();
-        }
-    }
+    // register <bit<32>>(6150) database;
+    // register <bit<32>>(1025) latestVer;
+    // register <bit<1>>(1025) notNull;
 
     apply {
-        // if (hdr.ethernet.etherType == TYPE_IPV4) {
-        //     ipv4_lpm.apply();
-        //     if (hdr.tcp.dstPort == 0x1234) {
-        //         kvs.apply();
-        //         hdr.kvs.first = 0;
-        //         hdr.kvs.second = 0;
-        //     } 
-        // }
-        if(hdr.response[0].isValid()){
-            ipv4_lpm.apply();
-            kvs.apply();
-            
-            if (hdr.kvs.op == 4) {
-                select_ops.apply();
-                get_range();
+        if(hdr.kvs.isValid()) {
+            clone(CloneType.I2E, 1);
+            if (hdr.kvs.first<=512) {
+                standard_metadata.egress_spec = 2;
+            } 
+            else{
+                standard_metadata.egress_spec = 3;
             }
-
+            hdr.ipv4.dstAddr = dstAddr;
         }
-        
         
     }
 }
@@ -313,11 +170,7 @@ control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
     apply {  
-        if (hdr.response[0].isValid() && (hdr.kvs.op == 3 || hdr.kvs.op == 4)) {
-            if ((bit<32>)(hdr.kvs.first + meta.circulate_index) <= hdr.kvs.second) {
-                recirculate_preserving_field_list(RECIRC_FL);
-            } 
-        }
+        
     }
 }
 
