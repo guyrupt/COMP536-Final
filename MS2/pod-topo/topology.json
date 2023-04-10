@@ -1,18 +1,56 @@
 {
     "hosts": {
-        "h1": {"ip": "10.0.1.1/24", "mac": "08:00:00:00:01:11",
-               "commands":["route add default gw 10.0.1.10 dev eth0",
-                           "arp -i eth0 -s 10.0.1.10 08:00:00:00:01:00"]}
+        "h1": {
+            "ip": "10.0.1.1/24",
+            "mac": "08:00:00:00:01:11",
+            "commands": [
+                "route add default gw 10.0.1.10 dev eth0",
+                "arp -i eth0 -s 10.0.1.10 08:00:00:00:01:00"
+            ]
+        }
     },
     "switches": {
-        "s0": { "runtime_json" : "pod-topo/s0-runtime.json" },
-        "s1": { "runtime_json" : "pod-topo/s1-runtime.json" },
-        "s2": { "runtime_json" : "pod-topo/s2-runtime.json" },
-        "s3": { "runtime_json" : "pod-topo/s3-runtime.json" }
+        "s0": {
+            "runtime_json": "pod-topo/s0-runtime.json"
+        },
+        "s1": {
+            "runtime_json": "pod-topo/s1-runtime.json"
+        },
+        "s2": {
+            "runtime_json": "pod-topo/s2-runtime.json"
+        },
+        "s3": {
+            "runtime_json": "pod-topo/s3-runtime.json"
+        }
     },
     "links": [
-        ["h1", "s0-p1"],
-        ["s0-p2", "s1-p1"], ["s0-p3", "s2-p1"],
-        ["s0-p4","s3-p1"]
+        [
+            "h1",
+            "s0-p1"
+        ],
+        [
+            "s0-p2",
+            "s1-p1"
+        ],
+        [
+            "s0-p3",
+            "s2-p1"
+        ],
+        [
+            "s0-p4",
+            "s3-p1"
+        ],
+        [
+            "s1-p2",
+            "h1"
+        ],
+        [
+            "s2-p2",
+            "h1"
+        ],
+        [
+            "s3-p2",
+            "h1"
+        ]
     ]
 }
