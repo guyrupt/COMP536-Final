@@ -57,6 +57,7 @@ header kvs_t {
     bit<32> second;
     bit<32> version;
     bit<8> protocol;
+    bit<8> pingpong;
 }
 
 header response_t {
@@ -142,23 +143,85 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
     
-    // register <bit<32>>(1025) database;
-    // register <bit<32>>(6150) database;
-    // register <bit<32>>(1025) latestVer;
-    // register <bit<1>>(1025) notNull;
+    register <bit<32>>(2) healthy_db; // port number of healthy db. 0 for db1(<=512), 1 for db2(>512)
+    register <bit<32>>(1) request_cnt; // count total requests
+    register <bit<32>>(2) pingpong_1; // 0 for ping count , 1 for pong count
+    register <bit<32>>(2) pingpong_2; // 0 for ping count , 1 for pong count
+
 
     apply {
         if(hdr.kvs.isValid()) {
-            clone(CloneType.I2E, 1);
-            if (hdr.kvs.first<=512) {
-                standard_metadata.egress_spec = 2;
-            } 
-            else{
-                standard_metadata.egress_spec = 3;
+            if(standard_metadata.ingress_port == 1){ // packets to forward to dbs 
+                bit<32> req_cnt = 0;
+                request_cnt.read(req_cnt, 0);
+                if (req_cnt % 10 == 0){ // send ping packet
+                    hdr.kvs.pingpong = 1; // mark as ping packet
+                    // update ping counters
+                    bit<32> ping_cnt = 0;
+                    pingpong_1.read(ping_cnt, 0);
+                    pingpong_1.write(0, ping_cnt+1);
+                    pingpong_2.read(ping_cnt, 0);
+                    pingpong_2.write(0, ping_cnt+1);
+
+                }
+
+                bit<32> db1 = 0;
+                bit<32> db2 = 0;
+                healthy_db.read(db1, 0);
+                healthy_db.read(db2, 1);
+                if (db1 == 0 && db2 == 0) { // first time, setting default dbs
+                    db1 = 2;
+                    db2 = 3;
+                }
+
+                if (req_cnt % 15 == 0){ // check health of dbs
+                    bit<32> ping_cnt = 0;
+                    bit<32> pong_cnt = 0;
+                    pingpong_1.read(ping_cnt, 0);
+                    pingpong_1.read(pong_cnt, 1);
+                    if (ping_cnt >= pong_cnt + 10){ // db1 is unhealthy
+                        healthy_db.write(4, db1); // replace unhealthy db with backup
+                        pingpong_1.write(0, 0); // reset pingpong counters
+                        pingpong_1.write(1, 0);
+                    }
+                    pingpong_2.read(ping_cnt, 0);
+                    pingpong_2.read(pong_cnt, 1);
+                    if (ping_cnt >= pong_cnt + 10){ // db2 is unhealthy
+                        healthy_db.write(4, db2); // replace unhealthy db with backup
+                        pingpong_2.write(0, 0); // reset pingpong counters
+                        pingpong_2.write(1, 0);
+                    }
+
+                }
+
+                // select healthy db to forward to
+                healthy_db.read(db1, 0);
+                healthy_db.read(db2, 1);
+                
+                if (hdr.kvs.first<=512) {
+                    standard_metadata.egress_spec = db1;
+                } 
+                else{
+                    standard_metadata.egress_spec = db2;
+                }
+                hdr.ipv4.dstAddr = dstAddr;
+                clone(CloneType.I2E, 1); // clone to backup db
+                request_cnt.write(0, req_cnt+1); // update request counter
             }
-            hdr.ipv4.dstAddr = dstAddr;
+            else { // pong packets from dbs
+                bit<32> pong_cnt = 0;
+                if (standard_metadata.ingress_port == 2){
+                    pingpong_1.read(pong_cnt, 1);
+                    pingpong_1.write(1, pong_cnt+1);
+                }
+                else if (standard_metadata.ingress_port == 3){
+                    pingpong_2.read(pong_cnt, 1);
+                    pingpong_2.write(1, pong_cnt+1);
+                }
+                // mark packet to drop
+                mark_to_drop(standard_metadata);
+            }   
         }
-        
     }
 }
 
