@@ -1,0 +1,31 @@
+{
+  "target": "bmv2",
+  "p4info": "build/ms2.p4.p4info.txt",
+  "bmv2_json": "build/ms2.json",
+  "table_entries": [
+    {
+      "table": "MyIngress.kvs",
+      "match": {
+        "hdr.kvs.op": 1
+      },
+      "action_name": "MyIngress.get",
+      "action_params": {}
+    },
+    {
+      "table": "MyIngress.kvs",
+      "match": {
+        "hdr.kvs.op": 2
+      },
+      "action_name": "MyIngress.put",
+      "action_params": {}
+    },
+    {
+      "table": "MyIngress.kvs",
+      "match": {
+        "hdr.kvs.op": 3
+      },
+      "action_name": "MyIngress.get_range",
+      "action_params": {}
+    }
+  ]
+}
