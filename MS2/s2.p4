@@ -68,7 +68,8 @@ header response_t {
 }
 
 struct metadata {
-    bit<14> nport;
+    @field_list(RECIRC_FL)
+    bit<16> circulate_index;
 }
 
 struct headers {
@@ -142,96 +143,75 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
     
-    register <bit<9>>(2) healthy_db; // port number of healthy db. 0 for db1(<=512), 1 for db2(>512)
-    register <bit<32>>(1) request_cnt; // count total requests
-    register <bit<32>>(2) pingpong_1; // 0 for ping count , 1 for pong count
-    register <bit<32>>(2) pingpong_2; // 0 for ping count , 1 for pong count
+    register <bit<32>>(512) database;
+    register <bit<1>>(512) notNull;
+
+    action set_nhop(ip4Addr_t dstAddr, egressSpec_t port) {
+        hdr.ipv4.srcAddr = hdr.ipv4.dstAddr;
+        hdr.ipv4.dstAddr = dstAddr;
+        standard_metadata.egress_spec = port;
+    }
+
+    action drop() {
+        mark_to_drop(standard_metadata);
+    }
+
+    action get() {
+        database.read(hdr.response[0].value, (bit<32>)(hdr.kvs.first - 513));
+        notNull.read(hdr.response[0].notNull, (bit<32>)(hdr.kvs.first - 513));
+    }
+
+    action put() {
+        database.write((bit<32>)(hdr.kvs.first - 513), hdr.kvs.second);
+        notNull.write((bit<32>)(hdr.kvs.first - 513), 1);
+    }
+    
+    action get_range() {
+
+        hdr.response.push_front(1);
+        hdr.response[0].setValid();
+
+        bit<16> key = hdr.kvs.first + meta.circulate_index - 513;
+        database.read(hdr.response[0].value, (bit<32>)key);
+        notNull.read(hdr.response[0].notNull, (bit<32>)key);
+
+        meta.circulate_index = meta.circulate_index + 1;
+    }
+
+    table ipv4_lpm {
+        key = {
+            hdr.ipv4.dstAddr: lpm;
+        }
+        actions = {
+            set_nhop;
+            drop;
+        }
+        size = 1024;
+        default_action = drop();
+    }
+
+    table kvs {
+        key = {
+            hdr.kvs.op: exact;
+        }
+        actions = {
+            get;
+            put;
+            get_range;
+        }
+        size = 1024;
+    }
 
 
     apply {
-        if(hdr.kvs.isValid()) {
-            if(standard_metadata.ingress_port == 1){ // packets to forward to dbs 
-                bit<32> req_cnt = 0;
-                request_cnt.read(req_cnt, 0);
-                if (req_cnt == 10){ // send ping packet
-                    hdr.kvs.pingpong = 1; // mark as ping packet
-
-                    // update ping counters
-                    bit<32> ping_cnt = 0;
-                    pingpong_1.read(ping_cnt, 0);
-                    pingpong_1.write(0, ping_cnt+1);
-                    pingpong_2.read(ping_cnt, 0);
-                    pingpong_2.write(0, ping_cnt+1);
-
-                    request_cnt.write(0, 0); // update request counter
-
-                }
-
-                bit<9> db1 = 0;
-                bit<9> db2 = 0;
-                healthy_db.read(db1, 0);
-                healthy_db.read(db2, 1);
-                if (db1 == 0 && db2 == 0) { // first time, setting default dbs
-                    db1 = 2;
-                    db2 = 3;
-                }
-
-                if (req_cnt == 15){ // check health of dbs
-                    bit<32> ping_cnt = 0;
-                    bit<32> pong_cnt = 0;
-                    pingpong_1.read(ping_cnt, 0);
-                    pingpong_1.read(pong_cnt, 1);
-                    if (ping_cnt >= pong_cnt + 10){ // db1 is unhealthy
-                        healthy_db.write(4, db1); // replace unhealthy db with backup
-                        pingpong_1.write(0, 0); // reset pingpong counters
-                        pingpong_1.write(1, 0);
-                    }
-                    pingpong_2.read(ping_cnt, 0);
-                    pingpong_2.read(pong_cnt, 1);
-                    if (ping_cnt >= pong_cnt + 10){ // db2 is unhealthy
-                        healthy_db.write(4, db2); // replace unhealthy db with backup
-                        pingpong_2.write(0, 0); // reset pingpong counters
-                        pingpong_2.write(1, 0);
-                    }
-
-                    request_cnt.write(0, 0); // update request counter
-
-                }
-
-                // select healthy db to forward to
-                healthy_db.read(db1, 0);
-                healthy_db.read(db2, 1);
-                
-                if (hdr.kvs.first <= 512) {
-                    // Modified: Not sure why db1 and db2 are 0
-                    standard_metadata.egress_spec = 2;
-                } 
-                else{
-                    standard_metadata.egress_spec = 3;
-                }
-                // hdr.ipv4.dstAddr = dstAddr;
-                clone(CloneType.I2E, 1); // clone to backup db
-                request_cnt.write(0, req_cnt+1); // update request counter
-            }
-            else { 
-                if (hdr.kvs.pingpong == 1) {
-                    // pong packets from dbs
-                    bit<32> pong_cnt = 0;
-                    if (standard_metadata.ingress_port == 2){
-                        pingpong_1.read(pong_cnt, 1);
-                        pingpong_1.write(1, pong_cnt+1);
-                    }
-                    else if (standard_metadata.ingress_port == 3){
-                        pingpong_2.read(pong_cnt, 1);
-                        pingpong_2.write(1, pong_cnt+1);
-                    }
-                }  else {
-                    standard_metadata.egress_spec = 1;
-                }
-                // mark packet to drop
-                // mark_to_drop(standard_metadata);
-            }   
+        
+        if(hdr.response[0].isValid()){
+            ipv4_lpm.apply();
+            kvs.apply();
+            
         }
+        
+        
     }
 }
 
@@ -243,7 +223,11 @@ control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
     apply {  
-        
+        if (hdr.response[0].isValid() && (hdr.kvs.op == 3 || hdr.kvs.op == 4)) {
+            if ((bit<32>)(hdr.kvs.first + meta.circulate_index) <= hdr.kvs.second) {
+                recirculate_preserving_field_list(RECIRC_FL);
+            } 
+        }
     }
 }
 

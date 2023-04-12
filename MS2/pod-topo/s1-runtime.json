@@ -1,8 +1,25 @@
 {
   "target": "bmv2",
-  "p4info": "build/ms2.p4.p4info.txt",
-  "bmv2_json": "build/ms2.json",
+  "p4info": "build/s1.p4.p4info.txt",
+  "bmv2_json": "build/s1.json",
   "table_entries": [
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "default_action": true,
+      "action_name": "MyIngress.drop",
+      "action_params": { }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ipv4.dstAddr": ["10.0.1.1", 32]
+      },
+      "action_name": "MyIngress.set_nhop",
+      "action_params": {
+        "dstAddr": "10.0.1.1",
+        "port": 1
+      }
+    },
     {
       "table": "MyIngress.kvs",
       "match": {
@@ -23,6 +40,14 @@
       "table": "MyIngress.kvs",
       "match": {
         "hdr.kvs.op": 3
+      },
+      "action_name": "MyIngress.get_range",
+      "action_params": {}
+    },
+    {
+      "table": "MyIngress.kvs",
+      "match": {
+        "hdr.kvs.op": 4
       },
       "action_name": "MyIngress.get_range",
       "action_params": {}

@@ -103,13 +103,15 @@ def main():
         version=int(sys.argv[4])
         num_keys = second - first + 1
 
-        for i in range(first, num_keys, 10):
+        for i in range(first, second + 1, 10):
+            pkt0 = pkt.copy()
             end = i + (9 if (second - i) // 10 else (second - i))
             print(i, end)
-            pkt = pkt / IP(dst=addr)
-            pkt = pkt / KVS(operation=op, first=i, second=end, version=version)
-            pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
-            sendp(pkt, iface=iface, verbose=False)
+            pkt0 = pkt0 / IP(dst=addr)
+            pkt0 = pkt0/ KVS(operation=op, first=i, second=end, version=version)
+            pkt0 = pkt0 / TCP(dport=1234, sport=random.randint(49152,65535))
+            sendp(pkt0, iface=iface, verbose=False)
+            print(pkt0)
 
     elif sys.argv[1] == 'SELECT':
         op=4
@@ -121,28 +123,33 @@ def main():
             exit(1)
 
         operand = sys.argv[2]
-        select = 0
+        first, second = 0, 0
+        value = int(sys.argv[3])
+        version = int(sys.argv[4])
+
         if operand == '<':
-            select = 0x401
+            first, second = 0, value - 1
         elif operand == '>':
-            select = 0x402
+            first, second = value + 1, 1024
         elif operand == '<=':
-            select = 0x403
+            first, second = 0, value
         elif operand == '>=':
-            select = 0x404
+            first, second = value, 1024
         elif operand == '==':
-            select = 0x405
+            first, second = value, value
         else:
             print('invalid operand')
             exit(1)
             
-        for i in range(first, num_keys, 10):
+        for i in range(first, second + 1, 10):
+            pkt0 = pkt.copy()
             end = i + (9 if (second - i) // 10 else (second - i))
             print(i, end)
-            pkt = pkt / IP(dst=addr)
-            pkt = pkt / KVS(operation=op, first=i, second=end, version=version)
-            pkt = pkt / TCP(dport=1234, sport=random.randint(49152,65535))
-            sendp(pkt, iface=iface, verbose=False)
+            pkt0 = pkt0 / IP(dst=addr)
+            pkt0 = pkt0/ KVS(operation=op, first=i, second=end, version=version)
+            pkt0 = pkt0 / TCP(dport=1234, sport=random.randint(49152,65535))
+            sendp(pkt0, iface=iface, verbose=False)
+            print(pkt0)
 
 
     # pkt.show2()
