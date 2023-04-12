@@ -17,7 +17,8 @@ class KVS(Packet):
                     BitField("version",0,32),
                     BitField("protocol",0,8),
                     BitField("switch",0,8),
-                    BitField("pingpong",0,8)]
+                    BitField("pingpong",0,8),
+                    BitField("ID",100,8)]
 
 class Response(Packet):
     name = "Response"

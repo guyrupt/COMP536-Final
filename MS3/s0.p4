@@ -184,7 +184,7 @@ control MyIngress(inout headers hdr,
     action alice_write() {
         // allow write access to key ranges [0, 512]
         // use some action to do write operation
-        if (hdr.kvs.first>512 || hdr.kvs.second>512) {
+        if (hdr.kvs.first>512 || (hdr.kvs.second>512 && hdr.kvs.second!=2000)) {
             drop();
         }
     }
@@ -193,7 +193,7 @@ control MyIngress(inout headers hdr,
     action bob_read() {
         // allow read access to key ranges [0, 256]
         // use some action to do read operation
-        if (hdr.kvs.first>256 || hdr.kvs.second>256) {
+        if (hdr.kvs.first>256 || (hdr.kvs.second>256 && hdr.kvs.second!=2000)) {
             drop();
         }
     }
