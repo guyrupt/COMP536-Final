@@ -150,6 +150,11 @@ control MyIngress(inout headers hdr,
 
     apply {
         if(hdr.kvs.isValid()) {
+            bit<9> db1 = 0;
+            bit<9> db2 = 0;
+            healthy_db.read(db1, 0);
+            healthy_db.read(db2, 1);
+
             if(standard_metadata.ingress_port == 1){ // packets to forward to dbs 
                 bit<32> req_cnt = 0;
                 request_cnt.read(req_cnt, 0);
@@ -171,14 +176,10 @@ control MyIngress(inout headers hdr,
                     request_cnt.write(0, 0); // update request counter
 
                 }
-
-                bit<9> db1 = 0;
-                bit<9> db2 = 0;
-                healthy_db.read(db1, 0);
-                healthy_db.read(db2, 1);
+                
                 if (db1 == 0 && db2 == 0) { // first time, setting default dbs
-                    db1 = 2;
-                    db2 = 3;
+                    healthy_db.write(0, 2);
+                    healthy_db.write(1, 3);
                 }
                 
                 a = (bit<16>)req_cnt;
@@ -191,16 +192,21 @@ control MyIngress(inout headers hdr,
                     pingpong_1.read(ping_cnt, 0);
                     pingpong_1.read(pong_cnt, 1);
                     if (ping_cnt >= pong_cnt + 10){ // db1 is unhealthy
-                        healthy_db.write(4, db1); // replace unhealthy db with backup
+                        healthy_db.write(0, 4); // replace unhealthy db with backup
                         pingpong_1.write(0, 0); // reset pingpong counters
                         pingpong_1.write(1, 0);
+                    } else {
+                        healthy_db.write(1, 2);
                     }
+
                     pingpong_2.read(ping_cnt, 0);
                     pingpong_2.read(pong_cnt, 1);
                     if (ping_cnt >= pong_cnt + 10){ // db2 is unhealthy
-                        healthy_db.write(4, db2); // replace unhealthy db with backup
+                        healthy_db.write(1, 4); // replace unhealthy db with backup
                         pingpong_2.write(0, 0); // reset pingpong counters
                         pingpong_2.write(1, 0);
+                    } else {
+                        healthy_db.write(1, 3);
                     }
 
                     request_cnt.write(0, 0); // update request counter
@@ -212,11 +218,10 @@ control MyIngress(inout headers hdr,
                 healthy_db.read(db2, 1);
                 
                 if (hdr.kvs.first <= 512) {
-                    // Modified: Not sure why db1 and db2 are 0
-                    standard_metadata.egress_spec = 2;
+                    standard_metadata.egress_spec = db1;
                 } 
                 else{
-                    standard_metadata.egress_spec = 3;
+                    standard_metadata.egress_spec = db2;
                 }
                 // hdr.ipv4.dstAddr = dstAddr;
                 clone(CloneType.I2E, 1); // clone to backup db
@@ -226,19 +231,23 @@ control MyIngress(inout headers hdr,
                 if (hdr.kvs.pingpong == 1) {
                     // pong packets from dbs
                     bit<32> pong_cnt = 0;
-                    if (standard_metadata.ingress_port == 2){
+                    if (standard_metadata.ingress_port == 2) {
                         pingpong_1.read(pong_cnt, 1);
                         pingpong_1.write(1, pong_cnt+1);
-                    }
-                    else if (standard_metadata.ingress_port == 3){
+
+                    } else if (standard_metadata.ingress_port == 3) {
                         pingpong_2.read(pong_cnt, 1);
                         pingpong_2.write(1, pong_cnt+1);
+
                     }
                 }  
                 standard_metadata.egress_spec = 1;
                 
                 // mark packet to drop
-                // mark_to_drop(standard_metadata);
+                if (standard_metadata.ingress_port == 4 && 
+                    (db1 != 4 && (hdr.kvs.first <= 512)) || 
+                    (db2 != 4 && (hdr.kvs.first > 512)))
+                    mark_to_drop(standard_metadata);
             }   
         }
     }
