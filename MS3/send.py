@@ -18,7 +18,8 @@ class KVS(Packet):
                     BitField("protocol",0,8),
                     BitField("switch",0,8),
                     BitField("pingpong",0,8),
-                    BitField("ID",100,8)]
+                    BitField("ID",0,8),
+                    BitField("access",0,8)] # 0 for write and read, 1 for read only, 2 for no access
 
 class Response(Packet):
     name = "Response"
