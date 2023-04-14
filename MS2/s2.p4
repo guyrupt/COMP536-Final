@@ -178,6 +178,10 @@ control MyIngress(inout headers hdr,
         meta.circulate_index = meta.circulate_index + 1;
     }
 
+    action send_pong() {
+        standard_metadata.egress_spec = 1;
+    }
+    
     table ipv4_lpm {
         key = {
             hdr.ipv4.dstAddr: lpm;
@@ -207,7 +211,10 @@ control MyIngress(inout headers hdr,
         
         if(hdr.response[0].isValid()){
             ipv4_lpm.apply();
-            kvs.apply();
+            if (hdr.kvs.pingpong == 1 && hdr.kvs.first <= 512)
+                send_pong();
+            else
+                kvs.apply();
             
         }
         

@@ -223,7 +223,10 @@ control MyIngress(inout headers hdr,
                 else{
                     standard_metadata.egress_spec = db2;
                 }
-                // hdr.ipv4.dstAddr = dstAddr;
+                
+                if (hdr.kvs.pingpong == 1)
+                    clone(CloneType.I2E, 2); // clone ping packet to both switches
+                    
                 clone(CloneType.I2E, 1); // clone to backup db
                 request_cnt.write(0, req_cnt+1); // update request counter
             }

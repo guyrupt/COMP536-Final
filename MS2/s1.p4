@@ -211,12 +211,10 @@ control MyIngress(inout headers hdr,
         
         if(hdr.response[0].isValid()){
             ipv4_lpm.apply();
-            kvs.apply();
-            
-            // received ping packet
-            if (hdr.kvs.isValid() && hdr.kvs.pingpong == 1) {
+            if (hdr.kvs.pingpong == 1 && hdr.kvs.first > 512)
                 send_pong();
-            }
+            else
+                kvs.apply();
         }
         
         
