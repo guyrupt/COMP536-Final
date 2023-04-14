@@ -66,7 +66,7 @@ def handle_pkt(pkt):
     # if KVS in pkt:
     #     print("got a packet")
     #     pkt.show2()
-    if KVS in pkt and pkt[TCP].dport == 1234:
+    if KVS in pkt and pkt[TCP].dport == 1234 and pkt[Ether].dst == "08:00:00:00:01:11":
         print("got a packet")
         pkt.show2()
     #    hexdump(pkt)

@@ -224,13 +224,21 @@ control MyIngress(inout headers hdr,
                     standard_metadata.egress_spec = db2;
                 }
                 
-                if (hdr.kvs.pingpong == 1)
-                    clone(CloneType.I2E, 2); // clone ping packet to both switches
-                    
-                clone(CloneType.I2E, 1); // clone to backup db
+                if (hdr.kvs.pingpong == 1) {
+                    if (hdr.kvs.first <= 512)
+                        clone(CloneType.I2E, 3); // clone ping packet to db2
+                    else
+                        clone(CloneType.I2E, 2); // clone ping packet to db1
+                } else {
+                    clone(CloneType.I2E, 1); // clone to backup db
+                }
                 request_cnt.write(0, req_cnt+1); // update request counter
             }
             else { 
+                // set Mac address of received packet
+                hdr.ethernet.srcAddr = 0x080000000100;
+                hdr.ethernet.dstAddr = 0x080000000111;
+
                 if (hdr.kvs.pingpong == 1) {
                     // pong packets from dbs
                     bit<32> pong_cnt = 0;
@@ -241,10 +249,12 @@ control MyIngress(inout headers hdr,
                     } else if (standard_metadata.ingress_port == 3) {
                         pingpong_2.read(pong_cnt, 1);
                         pingpong_2.write(1, pong_cnt+1);
-
                     }
-                }  
-                standard_metadata.egress_spec = 1;
+                } 
+                if (hdr.kvs.pingpong == 2) 
+                    mark_to_drop(standard_metadata);
+                else
+                    standard_metadata.egress_spec = 1;
                 
                 // mark packet to drop
                 if (standard_metadata.ingress_port == 4 && 

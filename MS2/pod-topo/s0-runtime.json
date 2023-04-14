@@ -20,7 +20,20 @@
           "instance": 1
         },
         {
+          "egress_port": 4,
+          "instance": 1
+        }
+      ]
+    },
+    {
+      "clone_session_id": 3,
+      "replicas": [
+        {
           "egress_port": 3,
+          "instance": 1
+        },
+        {
+          "egress_port": 4,
           "instance": 1
         }
       ]

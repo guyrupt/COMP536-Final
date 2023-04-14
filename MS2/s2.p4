@@ -179,6 +179,7 @@ control MyIngress(inout headers hdr,
     }
 
     action send_pong() {
+        hdr.kvs.pingpong = 2;
         standard_metadata.egress_spec = 1;
     }
     
@@ -211,7 +212,7 @@ control MyIngress(inout headers hdr,
         
         if(hdr.response[0].isValid()){
             ipv4_lpm.apply();
-            if (hdr.kvs.pingpong == 1 && hdr.kvs.first <= 512)
+            if (hdr.kvs.isValid() && hdr.kvs.first <= 512)
                 send_pong();
             else
                 kvs.apply();
