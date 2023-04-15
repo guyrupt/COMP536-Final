@@ -10,11 +10,22 @@ from scapy.all import (
     IPOption,
     ShortField,
     get_if_list,
-    sniff
+    sniff,
 )
 from scapy.layers.inet import _IPOption_HDR
 
-from scapy.all import IP, TCP, Ether, get_if_hwaddr, get_if_list, sendp, Packet, BitField,bind_layers,XByteField
+from scapy.all import (
+    IP,
+    TCP,
+    Ether,
+    get_if_hwaddr,
+    get_if_list,
+    sendp,
+    Packet,
+    BitField,
+    bind_layers,
+    XByteField,
+)
 
 from send import KVS, Response
 
@@ -29,29 +40,33 @@ bind_layers(KVS, TCP, protocol=6)
 
 
 def get_if():
-    ifs=get_if_list()
-    iface=None
+    ifs = get_if_list()
+    iface = None
     for i in get_if_list():
         if "eth0" in i:
-            iface=i
-            break;
+            iface = i
+            break
     if not iface:
         print("Cannot find eth0 interface")
         exit(1)
     return iface
 
+
 class IPOption_MRI(IPOption):
     name = "MRI"
     option = 31
-    fields_desc = [ _IPOption_HDR,
-                    FieldLenField("length", None, fmt="B",
-                                  length_of="swids",
-                                  adjust=lambda pkt,l:l+4),
-                    ShortField("count", 0),
-                    FieldListField("swids",
-                                   [],
-                                   IntField("", 0),
-                                   length_from=lambda pkt:pkt.count*4) ]
+    fields_desc = [
+        _IPOption_HDR,
+        FieldLenField(
+            "length", None, fmt="B", length_of="swids", adjust=lambda pkt, l: l + 4
+        ),
+        ShortField("count", 0),
+        FieldListField(
+            "swids", [], IntField("", 0), length_from=lambda pkt: pkt.count * 4
+        ),
+    ]
+
+
 def get_packet_layers(packet):
     counter = 0
     while True:
@@ -62,6 +77,7 @@ def get_packet_layers(packet):
         yield layer
         counter += 1
 
+
 def handle_pkt(pkt):
     # if KVS in pkt:
     #     print("got a packet")
@@ -69,25 +85,25 @@ def handle_pkt(pkt):
     if KVS in pkt and pkt[TCP].dport == 1234 and pkt[Ether].dst == "08:00:00:00:01:11":
         print("got a packet")
         pkt.show2()
-    #    hexdump(pkt)
+        #    hexdump(pkt)
         if pkt[KVS].operation == 1:
             if pkt[Response].notNull == 1:
-                print(f'value: {pkt[Response].value}')
+                print(f"value: {pkt[Response].value}")
             else:
-                print('value is null')
+                print("value is null")
 
         elif pkt[KVS].operation == 2:
-            print('inserted')
-        
+            print("inserted")
+
         elif pkt[KVS].operation == 3 or pkt[KVS].operation == 4:
-            print('range query')
+            print("range query")
             for hdr in reversed(list(get_packet_layers(pkt))):
                 if hdr.name == "Response" and hdr.nextHeader == 0:
                     if hdr.notNull == 1:
-                        print(f'value: {hdr.value}')
+                        print(f"value: {hdr.value}")
                     else:
-                        print('value is null')
-                        
+                        print("value is null")
+
         sys.stdout.flush()
         print(pkt[Response].payload)
 
@@ -98,8 +114,8 @@ def main():
     iface = "eth0"
     print("sniffing on %s" % iface)
     sys.stdout.flush()
-    sniff(iface = iface,
-          prn = lambda x: handle_pkt(x))
+    sniff(iface=iface, prn=lambda x: handle_pkt(x))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
