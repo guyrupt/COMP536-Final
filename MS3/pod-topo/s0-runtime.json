@@ -2,7 +2,7 @@
   "target": "bmv2",
   "p4info": "build/s0.p4.p4info.txt",
   "bmv2_json": "build/s0.json",
-  "clone_sessions_entries": [
+  "clone_session_entries": [
     {
       "clone_session_id": 1,
       "replicas": [
@@ -11,6 +11,50 @@
           "instance": 1
         }
       ]
+    },
+    {
+      "clone_session_id": 2,
+      "replicas": [
+        {
+          "egress_port": 2,
+          "instance": 1
+        },
+        {
+          "egress_port": 4,
+          "instance": 1
+        }
+      ]
+    },
+    {
+      "clone_session_id": 3,
+      "replicas": [
+        {
+          "egress_port": 3,
+          "instance": 1
+        },
+        {
+          "egress_port": 4,
+          "instance": 1
+        }
+      ]
+    }
+  ],
+  "table_entries": [
+    {
+      "table": "MyIngress.acl",
+      "match": {
+        "hdr.kvs.ID": 1
+      },
+      "action_name": "MyIngress.alice_acl",
+      "action_params": {}
+    },
+    {
+      "table": "MyIngress.acl",
+      "match": {
+        "hdr.kvs.ID": 2
+      },
+      "action_name": "MyIngress.bob_acl",
+      "action_params": {}
     }
   ]
 }

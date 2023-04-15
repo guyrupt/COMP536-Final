@@ -59,7 +59,8 @@ header kvs_t {
     bit<8> protocol;
     bit<8> pingpong;
     bit<8> ID;
-    bit<8> access; // Access info for client side. 0 for write and read, 1 for read only, 2 for no access
+    bit<8> access; // Access info; 0 for action authorized, 1 for write unauthorized, 2 for read & write unauthorized
+    bit<32> ceil;
 }
 
 header response_t {
@@ -71,7 +72,6 @@ header response_t {
 
 struct metadata {
     bit<14> nport;
-    bit<8> access; // Access info for server usage. 0 for write and read, 1 for read only, 2 for no access
 }
 
 struct headers {
@@ -149,185 +149,153 @@ control MyIngress(inout headers hdr,
     register <bit<32>>(1) request_cnt; // count total requests
     register <bit<32>>(2) pingpong_1; // 0 for ping count , 1 for pong count
     register <bit<32>>(2) pingpong_2; // 0 for ping count , 1 for pong count
-    
-    // Define match-action table for Alice
-    table alice_acl {
+
+    action alice_acl() {
+        if (hdr.kvs.op == 2 && hdr.kvs.first > 512){
+            hdr.kvs.access = 1;
+        }
+    }
+
+    action bob_acl() {
+        if (hdr.kvs.first > 256 || hdr.kvs.ceil > 256){
+            hdr.kvs.access = 2;
+        }
+    }
+
+
+    table acl {
         key = {
-            hdr.key_id : exact;
+            hdr.kvs.ID : exact;
         }
         actions = {
-            alice_read;
-            alice_write;
-            drop;
+            alice_acl;
+            bob_acl;
+            NoAction;
         }
         size = 1024;
-    }
-
-    // Define match-action table for Bob
-    table bob_acl {
-        key = {
-            hdr.key_id : exact;
-        }
-        actions = {
-            bob_read;
-            bob_write;
-            drop;
-        }
-        size = 1024;
-    }
-
-    // Define actions for Alice
-    action alice_read() {
-        // allow read access to all key ranges [0--1024]
-        // use some action to do read operation
-    }
-
-    action alice_write() {
-        // allow write access to key ranges [0, 512]
-        // use some action to do write operation
-        if (hdr.kvs.first>512 || (hdr.kvs.second>512 && hdr.kvs.second!=2000)) {
-            drop();
-        }
-    }
-
-    // Define actions for Bob
-    action bob_read() {
-        // allow read access to key ranges [0, 256]
-        // use some action to do read operation
-        if (hdr.kvs.first>256 || (hdr.kvs.second>256 && hdr.kvs.second!=2000)) {
-            drop();
-        }
-    }
-
-    action bob_write() {
-        // no access to any key range
-        drop();
+        default_action = NoAction();
     }
 
     apply {
         if(hdr.kvs.isValid()) {
-            bit<9> db1 = 0;
-            bit<9> db2 = 0;
-            healthy_db.read(db1, 0);
-            healthy_db.read(db2, 1);
-
-            if(standard_metadata.ingress_port == 1){ // packets to forward to dbs 
-                bit<32> req_cnt = 0;
-                request_cnt.read(req_cnt, 0);
-                bit<16> a = (bit<16>)req_cnt;
-                bit<16> b = 10;
-                bit<16> mod_result;
-
-                hash(mod_result, HashAlgorithm.identity, (bit<16>)0, {a}, b);
-                if (mod_result == 0){ // send ping packet
-                    hdr.kvs.pingpong = 1; // mark as ping packet
-
-                    // update ping counters
-                    bit<32> ping_cnt = 0;
-                    pingpong_1.read(ping_cnt, 0);
-                    pingpong_1.write(0, ping_cnt+1);
-                    pingpong_2.read(ping_cnt, 0);
-                    pingpong_2.write(0, ping_cnt+1);
-
-                    request_cnt.write(0, 0); // update request counter
-
-                }
-
-
-                bit<32> db1 = 0;
-                bit<32> db2 = 0;
+            acl.apply();
+            if (hdr.kvs.access != 0) { // access denied, no forwarding to dbs, just send response back
+                standard_metadata.egress_spec = 1;
+            }
+            else {
+                bit<9> db1 = 0;
+                bit<9> db2 = 0;
                 healthy_db.read(db1, 0);
                 healthy_db.read(db2, 1);
-                
-                bit<32> db1 = 0;
-                bit<32> db2 = 0;
-                healthy_db.read(db1, 0);
-                healthy_db.read(db2, 1);
-                if (db1 == 0 && db2 == 0) { // first time, setting default dbs
-                    healthy_db.write(0, 2);
-                    healthy_db.write(1, 3);
-                }
-                
-                a = (bit<16>)req_cnt;
-                b = 15;
 
-                hash(mod_result, HashAlgorithm.identity, (bit<16>)0, {a}, b);
-                if (mod_result == 0){ // check health of dbs
-                    bit<32> ping_cnt = 0;
-                    bit<32> pong_cnt = 0;
-                    pingpong_1.read(ping_cnt, 0);
-                    pingpong_1.read(pong_cnt, 1);
-                    if (ping_cnt >= pong_cnt + 10){ // db1 is unhealthy
-                        healthy_db.write(0, 4); // replace unhealthy db with backup
-                        pingpong_1.write(0, 0); // reset pingpong counters
-                        pingpong_1.write(1, 0);
-                    } else {
-                        healthy_db.write(1, 2);
+                if(standard_metadata.ingress_port == 1){ // packets to forward to dbs 
+                    bit<32> req_cnt = 0;
+                    request_cnt.read(req_cnt, 0);
+                    bit<16> a = (bit<16>)req_cnt;
+                    bit<16> b = 10;
+                    bit<16> mod_result;
+
+                    hash(mod_result, HashAlgorithm.identity, (bit<16>)0, {a}, b);
+                    if (mod_result == 0){ // send ping packet
+                        hdr.kvs.pingpong = 1; // mark as ping packet
+
+                        // update ping counters
+                        bit<32> ping_cnt = 0;
+                        pingpong_1.read(ping_cnt, 0);
+                        pingpong_1.write(0, ping_cnt+1);
+                        pingpong_2.read(ping_cnt, 0);
+                        pingpong_2.write(0, ping_cnt+1);
+
+                        request_cnt.write(0, 0); // update request counter
+
                     }
-
-                    pingpong_2.read(ping_cnt, 0);
-                    pingpong_2.read(pong_cnt, 1);
-                    if (ping_cnt >= pong_cnt + 10){ // db2 is unhealthy
-                        healthy_db.write(1, 4); // replace unhealthy db with backup
-                        pingpong_2.write(0, 0); // reset pingpong counters
-                        pingpong_2.write(1, 0);
-                    } else {
+                    
+                    if (db1 == 0 && db2 == 0) { // first time, setting default dbs
+                        healthy_db.write(0, 2);
                         healthy_db.write(1, 3);
                     }
+                    
+                    a = (bit<16>)req_cnt;
+                    b = 15;
 
-                    request_cnt.write(0, 0); // update request counter
-
-                }
-
-                // select healthy db to forward to
-                healthy_db.read(db1, 0);
-                healthy_db.read(db2, 1);
-                
-                if (hdr.kvs.first <= 512) {
-                    standard_metadata.egress_spec = db1;
-                } 
-                else{
-                    standard_metadata.egress_spec = db2;
-                }
-                
-                if (hdr.kvs.pingpong == 1) {
-                    if (hdr.kvs.first <= 512)
-                        clone(CloneType.I2E, 3); // clone ping packet to db2
-                    else
-                        clone(CloneType.I2E, 2); // clone ping packet to db1
-                } else {
-                    clone(CloneType.I2E, 1); // clone to backup db
-                }
-                request_cnt.write(0, req_cnt+1); // update request counter
-            }
-            else { 
-                // set Mac address of received packet
-                hdr.ethernet.srcAddr = 0x080000000100;
-                hdr.ethernet.dstAddr = 0x080000000111;
-
-                if (hdr.kvs.pingpong == 1) {
-                    // pong packets from dbs
-                    bit<32> pong_cnt = 0;
-                    if (standard_metadata.ingress_port == 2) {
+                    hash(mod_result, HashAlgorithm.identity, (bit<16>)0, {a}, b);
+                    if (mod_result == 0){ // check health of dbs
+                        bit<32> ping_cnt = 0;
+                        bit<32> pong_cnt = 0;
+                        pingpong_1.read(ping_cnt, 0);
                         pingpong_1.read(pong_cnt, 1);
-                        pingpong_1.write(1, pong_cnt+1);
+                        if (ping_cnt >= pong_cnt + 10){ // db1 is unhealthy
+                            healthy_db.write(0, 4); // replace unhealthy db with backup
+                            pingpong_1.write(0, 0); // reset pingpong counters
+                            pingpong_1.write(1, 0);
+                        } else {
+                            healthy_db.write(1, 2);
+                        }
 
-                    } else if (standard_metadata.ingress_port == 3) {
+                        pingpong_2.read(ping_cnt, 0);
                         pingpong_2.read(pong_cnt, 1);
-                        pingpong_2.write(1, pong_cnt+1);
+                        if (ping_cnt >= pong_cnt + 10){ // db2 is unhealthy
+                            healthy_db.write(1, 4); // replace unhealthy db with backup
+                            pingpong_2.write(0, 0); // reset pingpong counters
+                            pingpong_2.write(1, 0);
+                        } else {
+                            healthy_db.write(1, 3);
+                        }
+
+                        request_cnt.write(0, 0); // update request counter
+
                     }
-                } 
-                if (hdr.kvs.pingpong == 2) 
-                    mark_to_drop(standard_metadata);
-                else
-                    standard_metadata.egress_spec = 1;
-                
-                // mark packet to drop
-                if (standard_metadata.ingress_port == 4 && 
-                    (db1 != 4 && (hdr.kvs.first <= 512)) || 
-                    (db2 != 4 && (hdr.kvs.first > 512)))
-                    mark_to_drop(standard_metadata);
-            }   
+
+                    // select healthy db to forward to
+                    healthy_db.read(db1, 0);
+                    healthy_db.read(db2, 1);
+                    
+                    if (hdr.kvs.first <= 512) {
+                        standard_metadata.egress_spec = db1;
+                    } 
+                    else{
+                        standard_metadata.egress_spec = db2;
+                    }
+                    
+                    if (hdr.kvs.pingpong == 1) {
+                        if (hdr.kvs.first <= 512)
+                            clone(CloneType.I2E, 3); // clone ping packet to db2
+                        else
+                            clone(CloneType.I2E, 2); // clone ping packet to db1
+                    } else {
+                        clone(CloneType.I2E, 1); // clone to backup db
+                    }
+                    request_cnt.write(0, req_cnt+1); // update request counter
+                }
+                else { 
+                    // set Mac address of received packet
+                    hdr.ethernet.srcAddr = 0x080000000100;
+                    hdr.ethernet.dstAddr = 0x080000000111;
+
+                    if (hdr.kvs.pingpong == 1) {
+                        // pong packets from dbs
+                        bit<32> pong_cnt = 0;
+                        if (standard_metadata.ingress_port == 2) {
+                            pingpong_1.read(pong_cnt, 1);
+                            pingpong_1.write(1, pong_cnt+1);
+
+                        } else if (standard_metadata.ingress_port == 3) {
+                            pingpong_2.read(pong_cnt, 1);
+                            pingpong_2.write(1, pong_cnt+1);
+                        }
+                    } 
+                    if (hdr.kvs.pingpong == 2) 
+                        mark_to_drop(standard_metadata);
+                    else
+                        standard_metadata.egress_spec = 1;
+                    
+                    // mark packet to drop
+                    if (standard_metadata.ingress_port == 4 && 
+                        ((db1 != 4 && (hdr.kvs.first <= 512)) || 
+                        (db2 != 4 && (hdr.kvs.first > 512))))
+                        mark_to_drop(standard_metadata);
+                }   
+            }
         }
     }
 }
