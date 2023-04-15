@@ -258,8 +258,8 @@ control MyIngress(inout headers hdr,
                 
                 // mark packet to drop
                 if (standard_metadata.ingress_port == 4 && 
-                    (db1 != 4 && (hdr.kvs.first <= 512)) || 
-                    (db2 != 4 && (hdr.kvs.first > 512)))
+                    ((db1 != 4 && (hdr.kvs.first <= 512)) || 
+                    (db2 != 4 && (hdr.kvs.first > 512))))
                     mark_to_drop(standard_metadata);
             }   
         }
