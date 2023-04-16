@@ -274,7 +274,7 @@ control MyIngress(inout headers hdr,
                     hdr.ethernet.srcAddr = 0x080000000100;
                     hdr.ethernet.dstAddr = 0x080000000111;
 
-                    if (hdr.kvs.pingpong == 1) {
+                    if (hdr.kvs.pingpong == 1 || hdr.kvs.pingpong == 2) {
                         // pong packets from dbs
                         bit<32> pong_cnt = 0;
                         if (standard_metadata.ingress_port == 2) {

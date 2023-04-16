@@ -191,7 +191,7 @@ control MyIngress(inout headers hdr,
                     bit<32> pong_cnt = 0;
                     pingpong_1.read(ping_cnt, 0);
                     pingpong_1.read(pong_cnt, 1);
-                    if (ping_cnt >= pong_cnt + 10){ // db1 is unhealthy
+                    if (ping_cnt >= pong_cnt + 5){ // db1 is unhealthy
                         healthy_db.write(0, 4); // replace unhealthy db with backup
                         pingpong_1.write(0, 0); // reset pingpong counters
                         pingpong_1.write(1, 0);
@@ -199,7 +199,7 @@ control MyIngress(inout headers hdr,
 
                     pingpong_2.read(ping_cnt, 0);
                     pingpong_2.read(pong_cnt, 1);
-                    if (ping_cnt >= pong_cnt + 10){ // db2 is unhealthy
+                    if (ping_cnt >= pong_cnt + 5){ // db2 is unhealthy
                         healthy_db.write(1, 4); // replace unhealthy db with backup
                         pingpong_2.write(0, 0); // reset pingpong counters
                         pingpong_2.write(1, 0);
@@ -213,6 +213,7 @@ control MyIngress(inout headers hdr,
                 healthy_db.read(db1, 0);
                 healthy_db.read(db2, 1);
                 
+                // load balance check for db1 or db2
                 if (hdr.kvs.first <= 512) {
                     standard_metadata.egress_spec = db1;
                     if (db1 == 4)
@@ -241,7 +242,7 @@ control MyIngress(inout headers hdr,
                 hdr.ethernet.srcAddr = 0x080000000100;
                 hdr.ethernet.dstAddr = 0x080000000111;
 
-                if (hdr.kvs.pingpong == 1) {
+                if (hdr.kvs.pingpong == 1 || hdr.kvs.pingpong == 2) {
                     // pong packets from dbs
                     bit<32> pong_cnt = 0;
                     if (standard_metadata.ingress_port == 2) {
@@ -263,7 +264,15 @@ control MyIngress(inout headers hdr,
                     ((db1 != 4 && (hdr.kvs.first <= 512)) || 
                     (db2 != 4 && (hdr.kvs.first > 512))))
                     mark_to_drop(standard_metadata);
-            }   
+                
+                // record where the packet is coming from
+                if (standard_metadata.ingress_port == 2)
+                    hdr.kvs.version = 1;
+                else if (standard_metadata.ingress_port == 3)
+                    hdr.kvs.version = 2;
+                else
+                    hdr.kvs.version = 3;
+            }       
         }
     }
 }

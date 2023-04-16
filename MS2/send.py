@@ -78,15 +78,15 @@ def main():
 
     if sys.argv[1] == "GET":
         print("GET")
-        if len(sys.argv) < 4:
-            print('pass 2 more arguments:"<key>" "<version>"')
+        if len(sys.argv) < 3:
+            print('pass 1 more arguments:"<key>"')
             exit(1)
         if int(sys.argv[2]) > 1025 or int(sys.argv[2]) < 0:
             print("key out of range")
             exit(1)
         pkt = pkt / IP(dst=addr)
         pkt = pkt / KVS(
-            operation=1, first=int(sys.argv[2]), second=0, version=int(sys.argv[3])
+            operation=1, first=int(sys.argv[2]), second=0
         )
         pkt = pkt / TCP(dport=1234, sport=random.randint(49152, 65535))
         pkt.show2()
@@ -111,8 +111,8 @@ def main():
 
     elif sys.argv[1] == "RANGE":
         print("RANGE")
-        if len(sys.argv) < 5:
-            print('pass 3 more arguments:"<key1>" "<key2>" "<versionNum>"')
+        if len(sys.argv) < 4:
+            print('pass 2 more arguments:"<key1>" "<key2>"')
             exit(1)
         if int(sys.argv[2]) > 1025 or int(sys.argv[2]) < 0:
             print("key out of range")
@@ -121,7 +121,6 @@ def main():
         op = 3
         first = int(sys.argv[2])
         second = int(sys.argv[3])
-        version = int(sys.argv[4])
         num_keys = second - first + 1
 
         for i in range(first, second + 1, 10):
@@ -129,15 +128,15 @@ def main():
             end = i + (9 if (second - i) // 10 else (second - i))
             print(i, end)
             pkt0 = pkt0 / IP(dst=addr)
-            pkt0 = pkt0 / KVS(operation=op, first=i, second=end, version=version)
+            pkt0 = pkt0 / KVS(operation=op, first=i, second=end)
             pkt0 = pkt0 / TCP(dport=1234, sport=random.randint(49152, 65535))
             sendp(pkt0, iface=iface, verbose=False)
             print(pkt0)
 
     elif sys.argv[1] == "SELECT":
         op = 4
-        if len(sys.argv) < 5:
-            print('pass 3 more arguments:"<operand>" "<value>" "<versionNum>"')
+        if len(sys.argv) < 4:
+            print('pass 3 more arguments:"<operand>" "<value>"')
             exit(1)
         if int(sys.argv[3]) > 1025 or int(sys.argv[3]) < 0:
             print("key out of range")
@@ -146,7 +145,7 @@ def main():
         operand = sys.argv[2]
         first, second = 0, 0
         value = int(sys.argv[3])
-        version = int(sys.argv[4])
+
 
         if operand == "<":
             first, second = 0, value - 1
@@ -167,7 +166,7 @@ def main():
             end = i + (9 if (second - i) // 10 else (second - i))
             print(i, end)
             pkt0 = pkt0 / IP(dst=addr)
-            pkt0 = pkt0 / KVS(operation=op, first=i, second=end, version=version)
+            pkt0 = pkt0 / KVS(operation=op, first=i, second=end)
             pkt0 = pkt0 / TCP(dport=1234, sport=random.randint(49152, 65535))
             sendp(pkt0, iface=iface, verbose=False)
             print(pkt0)

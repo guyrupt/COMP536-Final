@@ -83,34 +83,34 @@ def handle_pkt(pkt):
     #     print("got a packet")
     #     pkt.show2()
     if KVS in pkt and pkt[TCP].dport == 1234 and pkt[Ether].dst == "08:00:00:00:01:11":
-        print("got a packet")
-        pkt.show2()
+        # print("got a packet")
+        # pkt.show2()
         #    hexdump(pkt)
+        switchNum = pkt[KVS].version
         if pkt[KVS].operation == 1:
             if pkt[Response].notNull == 1:
-                print(f"value: {pkt[Response].value}")
+                print(f"[Switch {switchNum}] value: {pkt[Response].value}")
             else:
-                print("value is null")
+                print(f"[Switch {switchNum}] value is null")
 
         elif pkt[KVS].operation == 2:
-            print("inserted")
+            print(f"[Switch {switchNum}] inserted")
 
         elif pkt[KVS].operation == 3 or pkt[KVS].operation == 4:
             print("range query")
             for hdr in reversed(list(get_packet_layers(pkt))):
                 if hdr.name == "Response" and hdr.nextHeader == 0:
                     if hdr.notNull == 1:
-                        print(f"value: {hdr.value}")
+                        print(f"[Switch {switchNum}] value: {hdr.value}")
                     else:
-                        print("value is null")
+                        print(f"[Switch {switchNum}] value is null")
 
         sys.stdout.flush()
-        print(pkt[Response].payload)
+        # print(pkt[Response].payload)
 
 
 def main():
-    # ifaces = [i for i in os.listdir('/sys/class/net/') if 'eth' in i]
-    # iface = ifaces[0]
+    
     iface = "eth0"
     print("sniffing on %s" % iface)
     sys.stdout.flush()
