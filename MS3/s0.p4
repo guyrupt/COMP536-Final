@@ -181,6 +181,8 @@ control MyIngress(inout headers hdr,
             acl.apply();
             if (hdr.kvs.access != 0) { // access denied, no forwarding to dbs, just send response back
                 standard_metadata.egress_spec = 1;
+                hdr.ethernet.srcAddr = 0x080000000100;
+                hdr.ethernet.dstAddr = 0x080000000111;
             }
             else {
                 bit<9> db1 = 0;

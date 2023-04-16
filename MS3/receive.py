@@ -82,9 +82,9 @@ def handle_pkt(pkt):
     # if KVS in pkt:
     #     print("got a packet")
     #     pkt.show2()
-    if KVS in pkt and pkt[TCP].dport == 1234:
-        print("got a packet")
-        pkt.show2()
+    if KVS in pkt and pkt[TCP].dport == 1234 and pkt[Ether].dst == "08:00:00:00:01:11":
+        # print("got a packet")
+        # pkt.show2()
         #    hexdump(pkt)
 
         if pkt[KVS].access == 1:
@@ -113,7 +113,7 @@ def handle_pkt(pkt):
                             print("value is null")
 
             sys.stdout.flush()
-            print(pkt[Response].payload)
+            # print(pkt[Response].payload)
 
 
 def main():
