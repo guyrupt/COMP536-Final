@@ -22,6 +22,7 @@ DEFAULT_JSON = $(BUILD_DIR)/$(DEFAULT_PROG:.p4=.json)
 # Define NO_P4 to start BMv2 without a program
 ifndef NO_P4
 # run_args += -j $(DEFAULT_JSON)
+# for all compiled json files, add -j <json_file> to run_args
 run_args += $(foreach json,$(compiled_json),-j $(BUILD_DIR)/$(json))
 endif
 
