@@ -228,8 +228,6 @@ control MyIngress(inout headers hdr,
                             healthy_db.write(0, 4); // replace unhealthy db with backup
                             pingpong_1.write(0, 0); // reset pingpong counters
                             pingpong_1.write(1, 0);
-                        } else {
-                            healthy_db.write(1, 2);
                         }
 
                         pingpong_2.read(ping_cnt, 0);
@@ -238,8 +236,6 @@ control MyIngress(inout headers hdr,
                             healthy_db.write(1, 4); // replace unhealthy db with backup
                             pingpong_2.write(0, 0); // reset pingpong counters
                             pingpong_2.write(1, 0);
-                        } else {
-                            healthy_db.write(1, 3);
                         }
 
                         request_cnt.write(0, 0); // update request counter
@@ -252,9 +248,13 @@ control MyIngress(inout headers hdr,
                     
                     if (hdr.kvs.first <= 512) {
                         standard_metadata.egress_spec = db1;
+                        if (db1 == 4)
+                        mark_to_drop(standard_metadata);
                     } 
                     else{
                         standard_metadata.egress_spec = db2;
+                        if (db2 == 4)
+                        mark_to_drop(standard_metadata);
                     }
                     
                     if (hdr.kvs.pingpong == 1) {
