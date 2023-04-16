@@ -148,6 +148,7 @@ control MyIngress(inout headers hdr,
     register <bit<1>>(1025) notNull;
 
     action set_nhop(ip4Addr_t dstAddr, egressSpec_t port) {
+        hdr.ethernet.dstAddr = 0x080000000111;
         hdr.ipv4.dstAddr = dstAddr;
         standard_metadata.egress_spec = port;
     }
@@ -198,28 +199,6 @@ control MyIngress(inout headers hdr,
         meta.circulate_index = meta.circulate_index + 1;
     }
 
-    action select_lt() {
-        hdr.kvs.second = (bit<32>) hdr.kvs.first - 1;
-        hdr.kvs.first = 0;
-    }
-
-    action select_gt() {
-        hdr.kvs.first = hdr.kvs.first + 1;
-        hdr.kvs.second = 1024;
-    }
-
-    action select_le() {
-        hdr.kvs.second = (bit<32>) hdr.kvs.first;
-        hdr.kvs.first = 0;
-    }
-
-    action select_ge() {
-        hdr.kvs.second = 1024;
-    }
-
-    action select_eq() {
-        hdr.kvs.second = (bit<32>) hdr.kvs.first;
-    }
 
     table ipv4_lpm {
         key = {
