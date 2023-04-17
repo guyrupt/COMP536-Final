@@ -69,5 +69,44 @@ To run, instead of running `send.py` in step 3, run
 You should see the following output in the terminal running `receive.py`:
 
 ```
+sniffing on eth0
+inserted 
+value: 1 
+value is null
+write unauthorized
+range query 
+value is null 
+value: 1 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+range query 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+inserted 
+value: 1
+read and write unauthorized for some of the keys
+read and write unauthorized for some of the keys
+range query 
+value is null 
+value: 1 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null 
+value is null
+read and write unauthorized for some of the keys
 ```
 

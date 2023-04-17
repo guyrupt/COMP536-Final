@@ -133,7 +133,7 @@ def main():
     elif sys.argv[1] == "RANGE":
         print("RANGE")
         if len(sys.argv) < 5:
-            print('pass 3 more arguments:"<key1>" "<key2>" "<versionNum>"')
+            print('pass 3 more arguments:"<key1>" "<key2>" "<version>"')
             exit(1)
         if int(sys.argv[2]) > 1025 or int(sys.argv[2]) < 0:
             print("key out of range")
@@ -165,7 +165,7 @@ def main():
     elif sys.argv[1] == "SELECT":
         op = 4
         if len(sys.argv) < 5:
-            print('pass 3 more arguments:"<operand>" "<value>" "<versionNum>"')
+            print('pass 3 more arguments:"<operand>" "<value>" "<version>"')
             exit(1)
         if int(sys.argv[3]) > 1025 or int(sys.argv[3]) < 0:
             print("key out of range")
