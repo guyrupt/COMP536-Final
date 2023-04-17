@@ -17,8 +17,8 @@
 │   ├── topology.json
 ├── send.py             # Script to send packets
 ├── receive.py          # Script to receive packets
-├── ms3_test.py         # Testing script
-├── failover_test.py    # Failover testing script
+├── ms2_test.py         # Testing script
+├── failover_test.py    # Failover testing script (extra credit)
 ```
 
 ## Testing
